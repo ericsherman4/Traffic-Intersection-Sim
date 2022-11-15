@@ -1,10 +1,51 @@
-from vpython import box,vector,compound,color
+from vpython import box,vector,compound,color,arrow,sleep
 from config import g
+from math import pi
 
 class env:
     def __init__(self):
         road_color = vector(0.2,0.2,0.2)
-        field = box(pos=vector(0,-10,0), height = 20, width = g.size, length = g.size, color = color.green)
-        road1 = box(pos=vector(0,0.3,0), height = 0.2, width = g.roadwidth, length = g.size, color = road_color)
-        road2 = box(pos=vector(0,0.3,0), height = 0.2, width = g.size, length= g.roadwidth, color = road_color)
-        self.scene = compound([field, road1, road2])
+        box(pos=vector(0,-10,0), height = 20, width = g.size, length = g.size, color = color.green)
+        box(pos=vector(0,0.3,0), height = 0.2, width = g.roadwidth, length = g.size, color = road_color)
+        box(pos=vector(0,0.3,0), height = 0.2, width = g.size, length= g.roadwidth, color = road_color)
+
+        # create road items
+        adj = 4 # this for making the lanes stop before the intersection
+        yellow_lane_center = (g.size-g.roadwidth)/4 + g.roadwidth/2 + adj
+        lane_length = (g.size-g.roadwidth)/2 - adj*2
+        stop_line_center = g.roadwidth/2
+        stop_line_length = g.roadwidth
+        white_lane_start = (g.roadwidth/2 + adj*2) + g.dashed_line_length/2
+        white_lane_end = g.size/2
+
+        # generate the lines by instantiating them and then rotating around center y axis
+        for i in range(0,4):
+            sleep(0.2)
+            line1 = box(pos = vector(yellow_lane_center,0,g.yellow_line_spacing_c2c >> 1), height = 1, width = g.yellow_line_width, length = lane_length, color=color.yellow)
+            line2 = box(pos = vector(yellow_lane_center,0,-g.yellow_line_spacing_c2c >> 1), height = 1, width = g.yellow_line_width, length = lane_length, color=color.yellow)
+            line1.rotate(angle=pi/2*i, axis = vector(0,1,0), origin=vector(0,0,0))
+            line2.rotate(angle=pi/2*i, axis = vector(0,1,0), origin=vector(0,0,0))
+            stop_line = box(pos=vector(stop_line_center+g.white_line_width/2+adj*2,0,0), height= 1.2, width = stop_line_length, length= g.white_line_width)
+            stop_line.rotate(angle=pi/2*i, axis = vector(0,1,0), origin=vector(0,0,0))
+        
+        sleep(0.5) # to make a nice loading animation
+        count = white_lane_start
+        pos_of_dashed_line = g.roadwidth/4
+        while(count < white_lane_end):
+            for i in range(0,4):
+                line1 = box(pos=vector(count, 0, pos_of_dashed_line), height = 1.2, width = 1, length = g.dashed_line_length, color= color.white)
+                line2 = box(pos=vector(count, 0, -pos_of_dashed_line), height = 1.2, width = 1, length = g.dashed_line_length, color= color.white)
+                line1.rotate(angle=pi/2*i, axis = vector(0,1,0), origin=vector(0,0,0))
+                line2.rotate(angle=pi/2*i, axis = vector(0,1,0), origin=vector(0,0,0))
+            sleep(0.1) # to make a nice loading animation
+            count+= g.dashed_line_length*2
+
+
+class axes:
+    def __init__(self):
+        length = g.size/2+50
+        width= 0.5
+        hwidth = 0.5
+        self.yaxis = arrow(pos=vector(0,-length,0), axis=vector(0, length*2,0), shaftwidth=width, color=color.green, headwidth = hwidth) 
+        self.xaxis = arrow(pos=vector(-length,0,0), axis=vector(length*2,0,0), shaftwidth=width, color=color.red, headwidth = hwidth)
+        self.zaxis = arrow(pos=vector(0,0,-length), axis=vector(0,0,length*2), shaftwidth=width, color=color.blue, headwidth = hwidth)

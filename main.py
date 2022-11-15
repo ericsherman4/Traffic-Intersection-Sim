@@ -1,6 +1,6 @@
 from config import g
 from vpython import *
-from env import env
+from env import env, axes
 from trafficlight import trafficlight
 
 
@@ -14,6 +14,7 @@ def sim_main():
     scene.range = 46.668804816827986
 
     sim = env()
+    guides = axes()
     light1 = trafficlight(vector(0,20,0), 360-135)
 
     L = label(pos=vector(0,2,0), text="waiting to start")
@@ -22,7 +23,7 @@ def sim_main():
     t = 0
     delta_t = 500
 
-    while(t < 70000):
+    while(t < 0):
         # limit the rate of the while loop
         rate(8) # input is frequency, loop time is 1/f
 

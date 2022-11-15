@@ -1,7 +1,12 @@
 class g:
     #env
-    size = 200
-    roadwidth = 15
+    size = 500
+    roadwidth = 30
+    yellow_line_width = 1
+    yellow_line_spacing_c2c = 2 #c2c = center to center
+    white_line_width = 1.5
+    dashed_line_length= 5
+
 
     #traffic light
     tl_height = 10
