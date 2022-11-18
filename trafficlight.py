@@ -8,7 +8,7 @@ class TL_States:
     # NO_POWER = 0, HALTED = 4
     NO_POWER, RED, GREEN, YELLOW, HALTED = range(5)
 
-class trafficlight:
+class TrafficLight:
     
     def __init__(self, pos, rotation_deg):
         # create yellow enclosure of the traffic light
