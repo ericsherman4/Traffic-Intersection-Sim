@@ -32,6 +32,6 @@ class g:
                 vector(1,0.7,0.2)]
 
     # car manager
-    max_cars = 15
-    max_cars_on_road = 8
+    max_cars = 5
+    max_cars_on_road = 1
 

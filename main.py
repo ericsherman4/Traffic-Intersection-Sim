@@ -2,8 +2,9 @@ from config import g
 from vpython import *
 from env import Env, Axes
 from trafficlight import TrafficLight
-from cars import Car
+from car import Car
 from carManager import CarManager
+import time
 
 
 def sim_main():
@@ -16,20 +17,31 @@ def sim_main():
     scene.range = 46.668804816827986
 
     Axes()
-    Env()
+    # Env()
     light1 = TrafficLight(vector(0,20,0), 360-135)
 
     L = label(pos=vector(0,2,0), text="waiting to start")
+    perf_label = label(pos=vector(-100,2,100), text="waiting for clock")
+
+    mgr = CarManager() # car manager instantiates the env
+    for i in range(0,8):
+        mgr.add_car(i)
 
     # timing will be in ms to avoid annoying floating point errors 
     t = 0
-    delta_t = 500
+    delta_t = 20
 
-    while(t < 0):
+    start_time = 0
+    end_time = 0
+
+    while(t < 200000):
+
+        # start_time = time.perf_counter()
+
         # limit the rate of the while loop
-        rate(8) # input is frequency, loop time is 1/f
+        rate(50) # input is frequency, loop time is 1/f
 
-        L.text = str(t)
+        # L.text = str(t)
 
         # run the traffic light state machine
         light1.run(t)
@@ -45,18 +57,17 @@ def sim_main():
         if t == 50000:
             light1.enable()
 
+        mgr.run(t)
+
 
         # increment sim time
         t += delta_t
 
-    # count = 50
-    # for i in range(0,10):
-    #     Car(count,g.roadwidth/4 + g.roadwidth/8)
-    #     count+=50
+        # end_time = time.perf_counter()
+        # if t % 1500 == 0:
+        #     perf_label.text = str(int(end_time*10**3) - int(start_time*10**3))
 
-    Car(vector(-200, 0, g.roadwidth/4 +g.roadwidth/8), True)
 
-    CarManager()
 
 
 
