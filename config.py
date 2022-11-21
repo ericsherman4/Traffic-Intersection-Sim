@@ -9,6 +9,7 @@ class g:
     white_line_width = 1.5
     dashed_line_length= 7
     animate_loading = False
+    generate_lane_identifiers = False
 
     #traffic light
     tl_height = 10
@@ -17,10 +18,10 @@ class g:
     light_radius = (tl_width - tl_width/6)/2
 
     # traffic light timing (ms)
-    time_green = 10000
+    time_green = 15
     time_red = time_green
-    time_yellow = 4000
-    time_red_overlap = 3000 
+    time_yellow = 8
+    time_red_overlap = 5 #IMPLEMENT
 
     # car
     car_width = 8
@@ -30,6 +31,13 @@ class g:
                 color.orange, color.white, color.blue, 
                 color.cyan, color.purple, color.magenta,
                 vector(1,0.7,0.2)]
+
+    # car personality
+    # for now, we will do all cars have constant velocity but think later 
+    # on should add jerk and also each car should have a different acceleration profiles
+    car_accel = 1
+    car_max_speed = 15
+    car_starting_vel = 2
 
     # car manager
     max_cars = 5

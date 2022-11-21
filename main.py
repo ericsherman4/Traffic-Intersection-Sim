@@ -29,17 +29,23 @@ def sim_main():
 
     # timing will be in ms to avoid annoying floating point errors 
     t = 0
-    delta_t = 20
+    delta_t = 0.1
 
     start_time = 0
     end_time = 0
 
-    while(t < 200000):
+    cycles = 0
+    dynam_rate = 50
+    completion_time_ms = 0
 
-        # start_time = time.perf_counter()
+    while(t < 60):
+
+        start_time = time.perf_counter()
+        cycles+=1
 
         # limit the rate of the while loop
-        rate(50) # input is frequency, loop time is 1/f
+        # rate(dynam_rate) # input is frequency, loop time is 1/f
+        rate(40)
 
         # L.text = str(t)
 
@@ -63,9 +69,13 @@ def sim_main():
         # increment sim time
         t += delta_t
 
-        # end_time = time.perf_counter()
-        # if t % 1500 == 0:
-        #     perf_label.text = str(int(end_time*10**3) - int(start_time*10**3))
+        end_time = time.perf_counter()
+        if cycles % 50 == 0:
+            completion_time_ms = int(end_time*10**3) - int(start_time*10**3)
+            perf_label.text = "comp" + str(completion_time_ms) + "\n dynam rate:" + str(dynam_rate) 
+            dynam_rate = 1000//completion_time_ms
+
+
 
 
 

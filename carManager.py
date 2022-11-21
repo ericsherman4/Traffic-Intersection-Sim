@@ -3,7 +3,7 @@ import copy
 from config import g
 from car import Car, C_States
 from env import Env
-from vpython import vector, sphere, color, sleep
+from vpython import vector, sphere, color, sleep, mag, mag2
 import random
 
 
@@ -62,6 +62,12 @@ class Lane:
             self.cars[idx] = temp
         self.cars[actual_idx] = copy.copy(car)
 
+    def check_bounds(self):
+        # print (self.cars[self.start_ptr].vehicle.pos)
+        # print(mag(self.cars[self.start_ptr].vehicle.pos))
+        if mag2(self.cars[self.start_ptr].vehicle.pos) > (g.size*0.5)**2:
+            self.deactivate() # this always pops the furthest along car
+
             
     
 
@@ -97,7 +103,7 @@ class CarManager:
 
 
 
-    def run(self, curr_time_ms):
+    def run(self, curr_time):
         # will be used to add cars on the fly, but for now ill do an add function
         # read file and import all the times that cars will be spawned? or do randomly? 
         # probably randomly long term but fixed for now.
@@ -106,14 +112,18 @@ class CarManager:
         # AND it will run all the individual cars state machine? or should the lane do that? 
         # CHECKING FOR CAR DEACTIVATING SHOULD BE IN HERE AS ITS THE CAR MANAGER.
         for lane in self.lanes:
+            # Check the furthest along car to see where it is
+            lane.check_bounds()
+
+            # Run all the car state machines
             for car in lane.cars:
-                car.run(curr_time_ms)
+                car.run(curr_time)
         
 
 
 
 
-    
+    # add a car to a lane. if idx is not specified, a random lane is picked.
     def add_car(self, idx : -1 ):
         if idx == -1:
             self.lanes[random.randint(0,self.num_lanes-1)].activate()

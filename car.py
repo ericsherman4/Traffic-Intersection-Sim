@@ -6,7 +6,7 @@ from math import pi
 
 class C_States:
     # spawning is 0 and turn_right is 8
-    SPAWNING, ACCEL, DECEL, STOPPED, DESPAWNING, CONSTANT_VEL, YIELDING, TURN_LEFT, TURN_RIGHT = range(9)
+    WAITING, ACCEL, DECEL, STOPPED, DESPAWNING, CONSTANT_VEL, YIELDING, TURN_LEFT, TURN_RIGHT = range(9)
         
 
 ###################################
@@ -28,17 +28,30 @@ class Car:
                            color= g.car_colors[random.randint(0,len(g.car_colors)-1)])
         self.dir = arrow(pos = vector(pos.x, offset,pos.z), axis = vector(-g.car_width-8,0,0), color = color.red)
 
-        # self.pr_sate = self.nx_state = C_States.SPAWNING
-        self.pr_state = C_States.CONSTANT_VEL
-        self.nx_state = C_States.CONSTANT_VEL
-
         self.body.rotate(angle=rot_deg/180*pi, axis = vector(0,1,0), origin=self.body.pos)
         self.dir.rotate(angle=rot_deg/180*pi, axis = vector(0,1,0), origin=self.body.pos)
         self.vehicle = compound([self.body, self.dir], origin = self.body.pos)
         # self.vehicle.rotate(angle= rot_deg/180*pi, axis=vector(0,20,0), origin=self.body.pos)
         # self.vehicle.axis= rotate(self.vehicle.axis, angle = pi, axis=vector(0,1,0))
         self.vehicle.visible = visible
-        
+
+        # define vehicle properties
+        self.vel = g.car_starting_vel # potentially pass then in later as a different thing or make it random
+        self.acc = g.car_accel
+        self.time = 0
+
+        # determine vehicle direction
+        self.set_direction_flags(rot_deg)
+
+        # initialize states
+        self.pr_state = C_States.ACCEL
+        self.nx_state = C_States.ACCEL
+
+        # print(C_States.SPAWNING, C_States.TURN_RIGHT)
+
+    # cool idea, arrow is a velocity arrow that shrinks and grows based on the velocity? 
+
+    def set_direction_flags(self, rot_deg):
         # determine direction
         self.xaxis_plus = False
         self.zaxis_plus = False
@@ -54,20 +67,6 @@ class Car:
         elif rot_deg == 90:
             self.zaxis_minus = True
 
-        self.vel = 4/1000 # potentially pass then in later as a different thing or make it random
-        self.time = 0
-
-        # print(C_States.SPAWNING, C_States.TURN_RIGHT)
-
-
-    # def __del__(self):
-        # https://www.glowscript.org/docs/VPythonDocs/delete.html
-        # Note vpython objects cannot be deleted from memory 
-        # (and still rendered, even if you call del on the object)
-        # print("I have been deleted!")
-        # self.vehicle.visible= False
-
-    # cool idea, arrow is a velocity arrow that shrinks and grows based on the velocity? 
 
     def visible(self):
         self.vehicle.visible = True
@@ -75,24 +74,62 @@ class Car:
     def invisible(self):
         self.vehicle.visible = False
 
-    def run(self, curr_time_ms):
+    def run(self, curr_time):
+
+        # Update next state
+        self.pr_state = self.nx_state
+
+        # Car State Machine
+        # WAITING, ACCEL, DECEL, STOPPED, DESPAWNING, CONSTANT_VEL, YIELDING, TURN_LEFT, TURN_RIGHT = range(9)
+        if self.pr_state == C_States.WAITING:
+            if self.vehicle.visible:
+                self.nx_state = C_States.ACCEL
+
+        elif self.pr_state == C_States.ACCEL:
+            # Check if the car was despawned
+            if not self.vehicle.visible:
+                self.nx_state = C_States.DESPAWNING
+                return
+
+            # some logic here for checking traffic light or cars in front
+
+            if self.vel < g.car_max_speed:
+                self.accel_move(curr_time)
+                self.nx_state = C_States.ACCEL
+            else:
+                self.nx_state = C_States.CONSTANT_VEL
+
+
+        elif self.pr_state == C_States.CONSTANT_VEL:
+            # Check if the car was despawned
+            if not self.vehicle.visible:
+                self.nx_state = C_States.DESPAWNING
+                return 
+
+            self.vel_move(curr_time)
+            self.nx_state = C_States.CONSTANT_VEL
+
+        elif self.pr_state == C_States.DESPAWNING:
+            # dont know if anything is needed here
+            self.nx_state = C_States.WAITING
         
 
-        if self.pr_state == C_States.CONSTANT_VEL:
-            self.move_constant_vel(curr_time_ms)
-
-
-        self.time = curr_time_ms
+        # update internal time
+        self.time = curr_time
             
-    def move_constant_vel(self, curr_time_ms):
+    def vel_move(self, curr_time):
         if self.xaxis_plus:
-            self.vehicle.pos.x = self.vehicle.pos.x - self.vel*(curr_time_ms - self.time)
+            self.vehicle.pos.x = self.vehicle.pos.x - self.vel*(curr_time - self.time)
         elif self.xaxis_minus:
-            self.vehicle.pos.x = self.vehicle.pos.x + self.vel*(curr_time_ms - self.time)
+            self.vehicle.pos.x = self.vehicle.pos.x + self.vel*(curr_time - self.time)
         elif self.zaxis_plus:
-            self.vehicle.pos.z = self.vehicle.pos.z - self.vel*(curr_time_ms - self.time)
+            self.vehicle.pos.z = self.vehicle.pos.z - self.vel*(curr_time - self.time)
         elif self.zaxis_minus:
-            self.vehicle.pos.z = self.vehicle.pos.z + self.vel*(curr_time_ms - self.time)
+            self.vehicle.pos.z = self.vehicle.pos.z + self.vel*(curr_time - self.time)
+
+    def accel_move(self, curr_time):
+        self.vel = self.vel + self.acc*(curr_time - self.time)
+        self.vel_move(curr_time)
 
 
         

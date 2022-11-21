@@ -80,7 +80,9 @@ class TrafficLight:
     def disable(self):
         self.TL_run = False
 
-    def run(self, curr_time_ms):
+    def run(self, curr_time):
+
+        # Update next state
         self.pr_state = self.nx_state
 
         # TL State Machine
@@ -88,46 +90,47 @@ class TrafficLight:
         if self.pr_state == TL_States.NO_POWER:
             if self.TL_run:
                 self.nx_state = TL_States.GREEN
-                self.timer = curr_time_ms
+                self.timer = curr_time
+
         elif self.pr_state == TL_States.GREEN:
             self.top.color = color.black
             self.bot.color = color.green
             if not self.TL_run:
-                self.nx_state = TL_States.HALTED
-                self.halted_state = self.pr_state
-                self.halted_time = curr_time_ms
-                print("HALTED NOW")
-            if curr_time_ms > (self.timer + g.time_green):
+                self.halt(curr_time)
+            if curr_time > (self.timer + g.time_green):
                 self.nx_state = TL_States.YELLOW
-                self.timer = curr_time_ms
+                self.timer = curr_time
+
         elif self.pr_state == TL_States.YELLOW:
             self.bot.color = color.black
             self.mid.color = color.yellow
             if not self.TL_run:
-                self.nx_state = TL_States.HALTED
-                self.halted_state = self.pr_state
-                self.halted_time = curr_time_ms
-                print("HALTED NOW")
-            if curr_time_ms > (self.timer + g.time_yellow):
+                self.halt(curr_time)
+            if curr_time > (self.timer + g.time_yellow):
                 self.nx_state = TL_States.RED
-                self.timer = curr_time_ms
+                self.timer = curr_time
+
         elif self.pr_state == TL_States.RED:
             self.mid.color = color.black
             self.top.color = color.red
             if not self.TL_run:
-                self.nx_state = TL_States.HALTED
-                self.halted_state = self.pr_state
-                self.halted_time = curr_time_ms
-                print("HALTED NOW")
-                print(f'curr time is {curr_time_ms} and the lim is {self.timer + g.time_red}')
-            if curr_time_ms > (self.timer + g.time_red):
+                self.halt(curr_time)
+                print(f'curr time is {curr_time} and the lim is {self.timer + g.time_red}')
+            if curr_time > (self.timer + g.time_red):
                 self.nx_state = TL_States.GREEN
-                self.timer = curr_time_ms
+                self.timer = curr_time
+
         elif self.pr_state == TL_States.HALTED:
             if self.TL_run:
                 self.nx_state = self.halted_state
-                time_in_halted = curr_time_ms - self.halted_time
+                time_in_halted = curr_time - self.halted_time
                 self.timer += time_in_halted
                 print(f'time in halted was {time_in_halted}')
-                print(f'curr time is {curr_time_ms} and the lim is {self.timer + g.time_red} (after incrementing)')
+                print(f'curr time is {curr_time} and the lim is {self.timer + g.time_red} (after incrementing)')
                 print("RETURNING FROM HALTED")
+
+    def halt(self, curr_time):
+        self.nx_state = TL_States.HALTED
+        self.halted_state = self.pr_state
+        self.halted_time = curr_time
+        print(f'HALTED NOW')

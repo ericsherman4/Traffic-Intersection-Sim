@@ -46,19 +46,21 @@ class Env:
         lane_identifer = -1
         labelpos_x = white_lane_end - white_lane_end/3
         pos_z = [pos_of_dashed_line + pos_of_dashed_line/2, pos_of_dashed_line - pos_of_dashed_line/2, 
-                     -pos_of_dashed_line + pos_of_dashed_line/2, -pos_of_dashed_line - pos_of_dashed_line/2]
-        for i in range(0,4):
-            angle=pi/2*i
-            for j in range(0,4):
-                # structure to pick different identifiers to account for mirroring when rotating.
-                if i < 2: 
-                    lane_identifer+=1
-                elif i == 2: 
-                    lane_identifer = 3 - j
-                elif i==3:
-                    lane_identifer = 7-j
-                label1 = label(pos=vector(labelpos_x, 0, pos_z[j] ), text=str(lane_identifer))
-                label1.rotate(angle=angle, axis = vector(0,1,0), origin=vector(0,0,0))
+                    -pos_of_dashed_line + pos_of_dashed_line/2, -pos_of_dashed_line - pos_of_dashed_line/2]
+        
+        if g.generate_lane_identifiers: 
+            for i in range(0,4):
+                angle=pi/2*i
+                for j in range(0,4):
+                    # structure to pick different identifiers to account for mirroring when rotating.
+                    if i < 2: 
+                        lane_identifer+=1
+                    elif i == 2: 
+                        lane_identifer = 3 - j
+                    elif i==3:
+                        lane_identifer = 7-j
+                    label1 = label(pos=vector(labelpos_x, 0, pos_z[j] ), text=str(lane_identifer))
+                    label1.rotate(angle=angle, axis = vector(0,1,0), origin=vector(0,0,0))
                 
         # variables that car manager will need
         offset_from_center = g.size/2 - 20
