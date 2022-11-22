@@ -6,6 +6,7 @@ from car import Car
 from carManager import CarManager
 import time
 from trafficlightManager import TrafficLightManager
+from event import Event, EventType, TL_Event
 
 
 def sim_main():
@@ -27,11 +28,10 @@ def sim_main():
     for i in range(0,8):
         cmgr.add_car(i)
 
-    lmgr = TrafficLightManager()
-
     # create time class?
     t = 0
     delta_t = 0.1
+    total_time = 100
 
     start_time = 0
     end_time = 0
@@ -40,7 +40,15 @@ def sim_main():
     dynam_rate = 50
     completion_time_ms = 1
 
-    while(t < 60):
+    # create traffic light manager and generate events
+    lmgr = TrafficLightManager()
+    lmgr.generate_events(total_time)
+
+    # variables for handling events in the sim loop
+    next_event = None
+    executed_event = True
+
+    while(t < total_time):
 
         start_time = time.perf_counter()
         cycles+=1
@@ -53,6 +61,19 @@ def sim_main():
         # L.text = str(t)
 
         cmgr.run(t)
+
+        # event fetch
+        if executed_event:
+            next_event = Event.q.get()
+            executed_event = False        
+        
+        #event execute
+        if t >= next_event.time:
+            if next_event.event_type == EventType.TL_EVENT:
+                # print(f'id before is {id(next_event)}')
+                lmgr.handle_event(next_event)
+            executed_event = True
+
 
 
         # increment sim time

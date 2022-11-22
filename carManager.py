@@ -136,7 +136,7 @@ class CarManager:
 
 
     # add a car to a lane. if idx is not specified, a random lane is picked.
-    def add_car(self, idx : -1 ):
+    def add_car(self, idx = -1 ):
         if idx == -1:
             self.lanes[random.randint(0,self.num_lanes-1)].activate()
         elif idx >= 0 and idx <= (self.num_lanes-1):

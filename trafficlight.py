@@ -3,13 +3,8 @@ from config import g
 from math import pi
 import copy
 import time
+from event import EventType, Event, TL_Event
 
-
-
-
-class TL_States:
-    # NO_POWER = 0, HALTED = 4
-    NO_POWER, RED, GREEN, YELLOW, HALTED = range(5)
 
 class TrafficLight:
     
@@ -42,12 +37,8 @@ class TrafficLight:
         self.rotate(rotation_deg)
         
         # Other member variables
-        self.TL_run = False
-        self.pr_state = TL_States.NO_POWER
-        self.nx_state = TL_States.NO_POWER
-        self.halted_state = None
-        self.halted_time = 0
-        self.timer = 0
+        self.pr_state = TL_Event.HALTED
+        self.nx_state = TL_Event.HALTED
         
     def translate(self, newpos : vector):
         # find distance from new vs old pos
@@ -78,60 +69,31 @@ class TrafficLight:
         # update rotation
         self.rotation = abs_deg
 
-    def enable(self):
-        self.TL_run = True
+    def handle_event(self, event : Event):
+        # print(f'id inside the TL class is {id(event)}')
+        self.nx_state = event.action
+        print(f'time is {event.time} and nx_action is {event.action}')
+        self.run()
 
-    def disable(self):
-        self.TL_run = False
-
-    def run(self, curr_time):
+    def run(self):
 
         # Update next state
         self.pr_state = self.nx_state
 
-        # TL State Machine
-        if self.pr_state == TL_States.NO_POWER:
-            if self.TL_run:
-                self.nx_state = TL_States.GREEN
-                self.timer = curr_time
-
-        elif self.pr_state == TL_States.GREEN:
+        # TL Event State Machine
+        if self.pr_state == TL_Event.GREEN:
             self.top.color = color.black
             self.bot.color = color.green
-            if not self.TL_run:
-                self.halt(curr_time)
-            if curr_time > (self.timer + g.time_green):
-                self.nx_state = TL_States.YELLOW
-                self.timer = curr_time
 
-        elif self.pr_state == TL_States.YELLOW:
+        elif self.pr_state == TL_Event.YELLOW:
             self.bot.color = color.black
             self.mid.color = color.yellow
-            if not self.TL_run:
-                self.halt(curr_time)
-            if curr_time > (self.timer + g.time_yellow):
-                self.nx_state = TL_States.RED
-                self.timer = curr_time
 
-        elif self.pr_state == TL_States.RED:
+        elif self.pr_state == TL_Event.RED:
             self.mid.color = color.black
             self.top.color = color.red
-            if not self.TL_run:
-                self.halt(curr_time)
-            if curr_time > (self.timer + g.time_red):
-                self.nx_state = TL_States.GREEN
-                self.timer = curr_time
 
-        elif self.pr_state == TL_States.HALTED:
-            if self.TL_run:
-                self.nx_state = self.halted_state
-                time_in_halted = curr_time - self.halted_time
-                self.timer += time_in_halted
-                print(f'LEAVING HALTED STATE')
-
-    def halt(self, curr_time):
-        self.nx_state = TL_States.HALTED
-        self.halted_state = self.pr_state
-        self.halted_time = curr_time
-        print(f'HALTED NOW')
+        elif self.pr_state == TL_Event.HALTED:
+            # dead state
+            pass
 

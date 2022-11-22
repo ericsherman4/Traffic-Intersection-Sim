@@ -1,4 +1,4 @@
-from trafficlight import TrafficLight, TL_States
+from trafficlight import TrafficLight
 import numpy as np
 from config import g
 from vpython import vector
@@ -24,17 +24,17 @@ class TrafficLightManager:
     def generate_events(self, total_duration):
 
         # start it off
-        self.event_target_all_TL(self,0, TL_Event.RED)
+        self.event_target_all_TL(0, TL_Event.RED)
 
         time = g.time_red_overlap
         while time < total_duration:
-            self.event_target_even_TL(self, time, TL_Event.GREEN)
+            self.event_target_even_TL(time, TL_Event.GREEN)
             time += g.time_green
             self.event_target_even_TL(time, TL_Event.YELLOW)
             time += g.time_yellow
             self.event_target_even_TL(time, TL_Event.RED)
             time += g.time_red_overlap
-            self.event_target_odd_TL(self, time, TL_Event.GREEN)
+            self.event_target_odd_TL(time, TL_Event.GREEN)
             time += g.time_green
             self.event_target_odd_TL(time, TL_Event.YELLOW)
             time += g.time_yellow
@@ -52,6 +52,10 @@ class TrafficLightManager:
     def event_target_odd_TL(self, curr_time, action):
         Event(curr_time, EventType.TL_EVENT, action, 1)
         Event(curr_time, EventType.TL_EVENT, action, 3)
+
+    def handle_event(self, event: Event):
+        # print(f'id after is {id(event)}')
+        self.lights[event.idx].handle_event(event)
 
     
             

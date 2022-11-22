@@ -19,9 +19,9 @@ class g:
 
     # traffic light timing (ms)
     time_green = 15
-    time_red = time_green
+    #time_red = time_green # this is no longer used by the new implementation
     time_yellow = 8
-    time_red_overlap = 5 #IMPLEMENT
+    time_red_overlap = 4 #IMPLEMENT
 
     # car
     car_width = 8
