@@ -41,8 +41,8 @@ class Car:
         self.set_direction_flags(rot_deg)
 
         # initialize states
-        self.pr_state = C_States.ACCEL
-        self.nx_state = C_States.ACCEL
+        self.pr_state = C_States.WAITING
+        self.nx_state = C_States.WAITING
 
         # variables for vehicle and env state
         self.vehicle.visible = visible

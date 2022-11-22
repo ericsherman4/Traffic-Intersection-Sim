@@ -5,6 +5,7 @@ from trafficlight import TrafficLight
 from car import Car
 from carManager import CarManager
 import time
+from trafficlightManager import TrafficLightManager
 
 
 def sim_main():
@@ -16,17 +17,19 @@ def sim_main():
     scene.center = vector(-0.62705, -8.96404, 4.50215)
     scene.range = 46.668804816827986
 
+    # Create axes for direction visualization
     Axes()
-    # Env()
-    light1 = TrafficLight(vector(0,20,0), 360-135)
 
     L = label(pos=vector(0,2,0), text="waiting to start")
     perf_label = label(pos=vector(-100,2,100), text="waiting for clock")
 
-    mgr = CarManager() # car manager instantiates the env
+    cmgr = CarManager() # car manager instantiates the env
     for i in range(0,8):
-        mgr.add_car(i)
+        cmgr.add_car(i)
 
+    lmgr = TrafficLightManager()
+
+    # create time class?
     t = 0
     delta_t = 0.1
 
@@ -46,17 +49,10 @@ def sim_main():
         # rate(dynam_rate) # input is frequency, loop time is 1/f
         rate(40)
 
+
         # L.text = str(t)
 
-        # run the traffic light state machine
-        light1.run(t)
-
-        if t < 5:
-            light1.disable()
-        elif int(t) == 5:
-            light1.enable()
-
-        mgr.run(t)
+        cmgr.run(t)
 
 
         # increment sim time

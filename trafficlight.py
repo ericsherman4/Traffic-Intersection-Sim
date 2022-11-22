@@ -4,6 +4,9 @@ from math import pi
 import copy
 import time
 
+
+
+
 class TL_States:
     # NO_POWER = 0, HALTED = 4
     NO_POWER, RED, GREEN, YELLOW, HALTED = range(5)
@@ -17,7 +20,8 @@ class TrafficLight:
         # make the lights (cylinders)
         # this position will be the center of the frame object (box)
         offset_height = g.tl_height/6
-        light_length = 1.3
+        light_length = 1.3  # length of the cylinder that sticks out from the yellow frame 
+                            # this is only the length from the yellow frame to end of cylinder
         temp_pos = copy.deepcopy(self.frame.pos)
         temp_pos.y += g.tl_height/2-offset_height
         self.top = cylinder(pos = temp_pos, color= color.black, axis = vector(g.tl_width/2+light_length,0,0), radius = g.light_radius)
@@ -86,7 +90,6 @@ class TrafficLight:
         self.pr_state = self.nx_state
 
         # TL State Machine
-        # Code clean this up and break it into function
         if self.pr_state == TL_States.NO_POWER:
             if self.TL_run:
                 self.nx_state = TL_States.GREEN
@@ -115,7 +118,6 @@ class TrafficLight:
             self.top.color = color.red
             if not self.TL_run:
                 self.halt(curr_time)
-                print(f'curr time is {curr_time} and the lim is {self.timer + g.time_red}')
             if curr_time > (self.timer + g.time_red):
                 self.nx_state = TL_States.GREEN
                 self.timer = curr_time
@@ -125,12 +127,11 @@ class TrafficLight:
                 self.nx_state = self.halted_state
                 time_in_halted = curr_time - self.halted_time
                 self.timer += time_in_halted
-                print(f'time in halted was {time_in_halted}')
-                print(f'curr time is {curr_time} and the lim is {self.timer + g.time_red} (after incrementing)')
-                print("RETURNING FROM HALTED")
+                print(f'LEAVING HALTED STATE')
 
     def halt(self, curr_time):
         self.nx_state = TL_States.HALTED
         self.halted_state = self.pr_state
         self.halted_time = curr_time
         print(f'HALTED NOW')
+
