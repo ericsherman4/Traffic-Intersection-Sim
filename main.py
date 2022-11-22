@@ -27,7 +27,6 @@ def sim_main():
     for i in range(0,8):
         mgr.add_car(i)
 
-    # timing will be in ms to avoid annoying floating point errors 
     t = 0
     delta_t = 0.1
 
@@ -36,7 +35,7 @@ def sim_main():
 
     cycles = 0
     dynam_rate = 50
-    completion_time_ms = 0
+    completion_time_ms = 1
 
     while(t < 60):
 
@@ -52,15 +51,9 @@ def sim_main():
         # run the traffic light state machine
         light1.run(t)
 
-        if t < 5000:
+        if t < 5:
             light1.disable()
-        elif t == 5000:
-            light1.enable()
-
-        if t == 27500:
-            light1.disable()
-
-        if t == 50000:
+        elif int(t) == 5:
             light1.enable()
 
         mgr.run(t)
@@ -73,7 +66,8 @@ def sim_main():
         if cycles % 50 == 0:
             completion_time_ms = int(end_time*10**3) - int(start_time*10**3)
             perf_label.text = "comp" + str(completion_time_ms) + "\n dynam rate:" + str(dynam_rate) 
-            dynam_rate = 1000//completion_time_ms
+            if completion_time_ms != 0:
+                dynam_rate = 1000//completion_time_ms
 
 
 

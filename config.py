@@ -38,6 +38,7 @@ class g:
     car_accel = 1
     car_max_speed = 15
     car_starting_vel = 2
+    car_max_decel = 5
 
     # car manager
     max_cars = 5

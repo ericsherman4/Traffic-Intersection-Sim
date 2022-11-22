@@ -22,8 +22,8 @@ class Lane:
         self.end_ptr = 0
 
         # generate all cars, set all to invisible
-        for i in range(0, self.max_cars):
-            self.cars[i] = Car(self.lane_start, car_rot_deg, visible=False)
+        # numpy.fill() much faster than filling manually with for loop
+        self.cars.fill(Car(self.lane_start, car_rot_deg, visible=False))
 
     def get_car_count(self):
         return self.cars_on_road
@@ -67,6 +67,17 @@ class Lane:
         # print(mag(self.cars[self.start_ptr].vehicle.pos))
         if mag2(self.cars[self.start_ptr].vehicle.pos) > (g.size*0.5)**2:
             self.deactivate() # this always pops the furthest along car
+
+    def update_closest_distance(self):
+        # Set the furthest along car's closest distance to None
+        self.cars[self.start_ptr].distance_to_nearest_car = None
+
+        for i in range(0, self.cars_on_road-1):
+            idx = (self.start_ptr + i) % self.max_cars
+            self.cars[idx].update_distances(
+                self.cars[(idx+1) % self.max_cars].vehicle.pos 
+                    - self.vehicle[idx].vehicle.pos)
+
 
             
     
@@ -114,6 +125,7 @@ class CarManager:
         for lane in self.lanes:
             # Check the furthest along car to see where it is
             lane.check_bounds()
+            lane.update_closest_distance()
 
             # Run all the car state machines
             for car in lane.cars:
