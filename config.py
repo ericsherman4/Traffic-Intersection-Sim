@@ -9,7 +9,7 @@ class g:
     white_line_width = 1.5
     dashed_line_length= 7
     animate_loading = False
-    generate_lane_identifiers = False
+    generate_lane_identifiers = True
 
     #traffic light
     tl_height = 10
@@ -18,10 +18,10 @@ class g:
     light_radius = (tl_width - tl_width/6)/2
 
     # traffic light timing (ms)
-    time_green = 15
+    time_green = 20
     #time_red = time_green # this is no longer used by the new implementation
     time_yellow = 8
-    time_red_overlap = 4 #IMPLEMENT
+    time_red_overlap = 5 
 
     # car
     car_width = 8
@@ -36,11 +36,11 @@ class g:
     # for now, we will do all cars have constant velocity but think later 
     # on should add jerk and also each car should have a different acceleration profiles
     car_accel = 1
-    car_max_speed = 15
+    car_max_speed = 6
     car_starting_vel = 2
     car_max_decel = 5
 
     # car manager
-    max_cars = 5
-    max_cars_on_road = 1
+    max_cars = 3
+    max_cars_on_road = 3
 

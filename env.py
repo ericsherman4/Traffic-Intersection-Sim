@@ -15,6 +15,7 @@ class Env:
         lane_length = (g.size-g.roadwidth)/2 - adj*2
         stop_line_center = g.roadwidth/2
         stop_line_length = g.roadwidth
+        stop_line_position = stop_line_center+g.white_line_width/2+adj*2
         white_lane_start = (g.roadwidth/2 + adj*2) + g.dashed_line_length/2
         white_lane_end = g.size/2
 
@@ -26,7 +27,7 @@ class Env:
             line2 = box(pos = vector(yellow_lane_center,0,-g.yellow_line_spacing_c2c >> 1), height = 1, width = g.yellow_line_width, length = lane_length, color=color.yellow)
             line1.rotate(angle=pi/2*i, axis = vector(0,1,0), origin=vector(0,0,0))
             line2.rotate(angle=pi/2*i, axis = vector(0,1,0), origin=vector(0,0,0))
-            stop_line = box(pos=vector(stop_line_center+g.white_line_width/2+adj*2,0,0), height= 1.2, width = stop_line_length, length= g.white_line_width)
+            stop_line = box(pos=vector(stop_line_position,0,0), height= 1.2, width = stop_line_length, length= g.white_line_width)
             stop_line.rotate(angle=pi/2*i, axis = vector(0,1,0), origin=vector(0,0,0))
         
         if g.animate_loading:
@@ -81,6 +82,27 @@ class Env:
                              vector(pos_z[1],0,-offset_from_center),
                              vector(pos_z[2],0,offset_from_center),
                              vector(pos_z[3],0,offset_from_center)]
+
+        self.stop_line_position =  [-stop_line_position,
+                                    -stop_line_position,
+                                    stop_line_position,
+                                    stop_line_position,
+                                    stop_line_position,
+                                    stop_line_position,
+                                    -stop_line_position,
+                                    -stop_line_position]
+
+        # self.stop_line_position =   [vector(-stop_line_position,0,pos_z[0]),
+        #                             vector(-stop_line_position,0,pos_z[1]),
+        #                             vector(stop_line_position,0,pos_z[2]),
+        #                             vector(stop_line_position,0,pos_z[3]),
+        #                             vector(pos_z[0],0,stop_line_position),
+        #                             vector(pos_z[1],0,stop_line_position),
+        #                             vector(pos_z[2],0,-stop_line_position),
+        #                             vector(pos_z[3],0,-stop_line_position)]
+
+        # for each in self.stop_line_position:
+            # box(pos=each, height = 20)
 
 
 

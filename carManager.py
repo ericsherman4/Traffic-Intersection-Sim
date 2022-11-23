@@ -5,25 +5,31 @@ from car import Car, C_States
 from env import Env
 from vpython import vector, sphere, color, sleep, mag, mag2
 import random
+from trafficlight import TrafficLight
+from event import TL_Event
 
 
 class Lane:
 
-    def __init__(self, max_cars, max_cars_on_road, lane_start_pos : vector, lane_end_pos : vector, car_rot_deg):
+    def __init__(self, max_cars, max_cars_on_road, lane_start_pos : vector, lane_end_pos : vector, stop_line_pos, car_rot_deg):
         self.cars = np.empty(max_cars, dtype=type(Car))
         self.max_cars = max_cars
         self.max_cars_on_road = max_cars_on_road
         self.cars_on_road = 0
         self.lane_start = lane_start_pos
         self.lane_end = lane_end_pos
+        self.stop_line_pos = stop_line_pos
 
         # Pointers to point to the cars that are currently on the road
         self.start_ptr = 0
         self.end_ptr = 0
 
         # generate all cars, set all to invisible
-        # numpy.fill() much faster than filling manually with for loop
-        self.cars.fill(Car(self.lane_start, car_rot_deg, visible=False))
+        for i in range(0,self.max_cars):
+            self.cars[i] = Car(self.lane_start, car_rot_deg, visible=False)
+
+        # for awareness of traffic lights
+        self.TL = None
 
     def get_car_count(self):
         return self.cars_on_road
@@ -65,18 +71,50 @@ class Lane:
     def check_bounds(self):
         # print (self.cars[self.start_ptr].vehicle.pos)
         # print(mag(self.cars[self.start_ptr].vehicle.pos))
-        if mag2(self.cars[self.start_ptr].vehicle.pos) > (g.size*0.5)**2:
+        if abs(self.cars[self.start_ptr].lane_pos) > g.size*0.5:
             self.deactivate() # this always pops the furthest along car
 
     def update_closest_distance(self):
-        # Set the furthest along car's closest distance to None
-        self.cars[self.start_ptr].distance_to_nearest_car = None
+        # TODO: CHANGE THESE VARIABLE NAMES!!!!!!!!!!!
 
-        for i in range(0, self.cars_on_road-1):
+        if self.cars_on_road == 0:
+            return
+
+        first_car_behind_light = False
+        # determine the closest distance based on whether its a car or the traffic light for the farthest car
+        if self.cars[self.start_ptr].lane_pos > self.stop_line_pos:
+            self.cars[self.start_ptr].update_distances(None)
+        else:
+            first_car_behind_light = True
+            if self.TL.get_state == TL_Event.GREEN:
+                self.cars[self.start_ptr].update_distances(None)
+            else:
+                self.cars[self.start_ptr].update_distances(self.stop_line_pos \
+                    - self.cars[self.start_ptr].lane_pos)
+        
+        # get the car in front and subtract it from the current car and that is the distance between them
+        # range starts at 1 to ignore furthest along car
+        # wont get executed if theres only one car on the road
+        for i in range(1, self.cars_on_road):
             idx = (self.start_ptr + i) % self.max_cars
-            self.cars[idx].update_distances(
-                self.cars[(idx+1) % self.max_cars].vehicle.pos 
-                    - self.vehicle[idx].vehicle.pos)
+            # first car is in front of the light so here we need to check which car is behind the light
+            if not first_car_behind_light:
+                if self.cars[idx].lane_pos > self.stop_line_pos:
+                    self.cars[idx].update_distances(
+                        self.cars[(idx+1) % self.max_cars].lane_pos
+                            - self.cars[idx].lane_pos)
+                else:
+                    self.cars[idx].update_distances(
+                        self.stop_line_pos - self.cars[idx].lane_pos)
+            else:
+                self.cars[idx].update_distances(
+                    self.cars[(idx+1) % self.max_cars].lane_pos
+                        - self.cars[idx].lane_pos)
+
+    def set_TL_reference(self, TL : TrafficLight):
+        self.TL = TL
+
+
 
 
             
@@ -104,8 +142,11 @@ class CarManager:
             self.lanes[i] = Lane(g.max_cars,g.max_cars_on_road,
                                  self.env.lane_pos_start[i], 
                                  self.env.lane_pos_end[i],
+                                 self.env.stop_line_position[i],
                                  self.car_rot[i])
-        
+
+
+
 
 
         # for item in self.lanes:
@@ -130,14 +171,25 @@ class CarManager:
             # Run all the car state machines
             for car in lane.cars:
                 car.run(curr_time)
-        
-
-
+    
 
 
     # add a car to a lane. if idx is not specified, a random lane is picked.
     def add_car(self, idx = -1 ):
         if idx == -1:
             self.lanes[random.randint(0,self.num_lanes-1)].activate()
-        elif idx >= 0 and idx <= (self.num_lanes-1):
+        elif idx >= 0 and idx < (self.num_lanes):
             self.lanes[idx].activate()
+
+    def set_TL_references(self, TLs : list):
+        self.lanes[0].set_TL_reference(TLs[3])
+        self.lanes[1].set_TL_reference(TLs[3])
+        self.lanes[2].set_TL_reference(TLs[0])
+        self.lanes[3].set_TL_reference(TLs[0])
+        self.lanes[4].set_TL_reference(TLs[2])
+        self.lanes[5].set_TL_reference(TLs[2])
+        self.lanes[6].set_TL_reference(TLs[1])
+        self.lanes[7].set_TL_reference(TLs[1])
+
+
+

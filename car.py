@@ -36,9 +36,11 @@ class Car:
         self.vel = g.car_starting_vel # potentially pass then in later as a different thing or make it random
         self.acc = 0
         self.time = 0
+        self.lane_pos = None
 
-        # determine vehicle direction
+        # determine vehicle direction and set lane_pos
         self.set_direction_flags(rot_deg)
+
 
         # initialize states
         self.pr_state = C_States.WAITING
@@ -48,8 +50,8 @@ class Car:
         self.vehicle.visible = visible
         self.distance_to_nearest_car = None
         self.prev_distance_to_nearest_car = None
-        self.safe_travel_distance = None    # based on cars speed
         self.delta_distance = None # difference of distance to nearest car variables between two time steps
+        self.safe_travel_distance = None    # based on cars speed
 
         # print(C_States.SPAWNING, C_States.TURN_RIGHT)
 
@@ -64,12 +66,16 @@ class Car:
 
         if rot_deg == 0:
             self.xaxis_plus = True
+            self.lane_pos = self.vehicle.pos.x
         elif rot_deg == 180:
             self.xaxis_minus = True
+            self.lane_pos = self.vehicle.pos.x
         elif rot_deg == 270:
             self.zaxis_plus = True
+            self.lane_pos = self.vehicle.pos.z
         elif rot_deg == 90:
             self.zaxis_minus = True
+            self.lane_pos = self.vehicle.pos.z
 
 
     def visible(self):
@@ -84,9 +90,13 @@ class Car:
 
         if self.distance_to_nearest_car == None or val == None:
             self.delta_distance = None
+        elif self.prev_distance_to_nearest_car == None:
+            self.delta_distance = None
         else:
-            self.delta_distance = self.distance_to_nearest_car \
-                - self.prev_distance_to_nearest_car
+            self.delta_distance = abs(self.distance_to_nearest_car \
+                - self.prev_distance_to_nearest_car)
+
+        # print(self.distance_to_nearest_car)
 
     def run(self, curr_time):
 
@@ -130,22 +140,43 @@ class Car:
                 self.nx_state = C_States.DESPAWNING
                 return 
 
-            if self.distance_to_nearest_car != None:
-                if self.safe_travel_distance < self.distance_to_nearest_car:
-                    self.nx_state = C_States.DECEL
-
+            # perform velocity move
             self.vel_move(curr_time)
-            self.nx_state = C_States.CONSTANT_VEL
+
+            # determine next state
+            if self.distance_to_nearest_car != None:
+                # print(f'{self.safe_travel_distance} and {self.distance_to_nearest_car}')
+                if self.safe_travel_distance > self.distance_to_nearest_car:
+                    self.nx_state = C_States.DECEL
+            else:
+                self.nx_state = C_States.CONSTANT_VEL    
+
+            
+            
 
         elif self.pr_state == C_States.DECEL:
             # map will return a positive value, need to negate to get negative acceleration
-            a = self.map(self.delta_distance, 0, self.safe_travel_distance, 0, g.car_max_decel)
+            # print("entered state decel")
+            if self.delta_distance == None:
+                self.nx_state = C_States.ACCEL
+                return
+
+            a = self.map(self.delta_distance*2.5, 0, self.safe_travel_distance/4, 0, g.car_max_decel)
             self.accel_move(curr_time, -a)
+            print(f'{self.delta_distance*2}, 0, {self.safe_travel_distance/4}, 0, {g.car_max_decel} and accel is: {a} and new v is {self.vel}')
+
+            if(self.vel <= 0.1):
+                self.vel = 0
+                self.nx_state = C_States.STOPPED
+            
 
         elif self.pr_state == C_States.DESPAWNING:
             # dont know if anything is needed here
             # might get rid of this state
             self.nx_state = C_States.WAITING
+
+        elif self.pr_state == C_States.STOPPED:
+            print("in stopped state")
         
 
         # update internal time
@@ -154,20 +185,29 @@ class Car:
     def vel_move(self, curr_time):
         if self.xaxis_plus:
             self.vehicle.pos.x = self.vehicle.pos.x - self.vel*(curr_time - self.time)
+            self.lane_pos = self.vehicle.pos.x
         elif self.xaxis_minus:
             self.vehicle.pos.x = self.vehicle.pos.x + self.vel*(curr_time - self.time)
+            self.lane_pos = self.vehicle.pos.x
         elif self.zaxis_plus:
             self.vehicle.pos.z = self.vehicle.pos.z - self.vel*(curr_time - self.time)
+            self.lane_pos = self.vehicle.pos.z
         elif self.zaxis_minus:
             self.vehicle.pos.z = self.vehicle.pos.z + self.vel*(curr_time - self.time)
+            self.lane_pos = self.vehicle.pos.z
 
     def accel_move(self, curr_time, a):
         self.vel = self.vel + a*(curr_time - self.time)
         self.vel_move(curr_time)
 
-    def map(val, min_range1, max_range1, min_range2, max_range2):
+    def map(self,val, min_range1, max_range1, min_range2, max_range2):
         if (max_range1 - min_range1) == 0 or val == None:
             return 0
+        
+        if val > max_range1:
+            val = max_range1
+        if val < min_range1:
+            val = min_range1
 
         # Borrowed from https://www.arduino.cc/reference/en/language/functions/math/map/ and translated to python
         return (val - min_range1)*(max_range2 - min_range2) / (max_range1 - min_range1) + min_range2

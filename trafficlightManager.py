@@ -26,20 +26,20 @@ class TrafficLightManager:
         # start it off
         self.event_target_all_TL(0, TL_Event.RED)
 
-        time = g.time_red_overlap
-        while time < total_duration:
-            self.event_target_even_TL(time, TL_Event.GREEN)
-            time += g.time_green
-            self.event_target_even_TL(time, TL_Event.YELLOW)
-            time += g.time_yellow
-            self.event_target_even_TL(time, TL_Event.RED)
-            time += g.time_red_overlap
-            self.event_target_odd_TL(time, TL_Event.GREEN)
-            time += g.time_green
-            self.event_target_odd_TL(time, TL_Event.YELLOW)
-            time += g.time_yellow
-            self.event_target_odd_TL(time, TL_Event.RED)
-            time += g.time_red_overlap
+        # time = g.time_red_overlap
+        # while time < total_duration:
+        #     self.event_target_even_TL(time, TL_Event.GREEN)
+        #     time += g.time_green
+        #     self.event_target_even_TL(time, TL_Event.YELLOW)
+        #     time += g.time_yellow
+        #     self.event_target_even_TL(time, TL_Event.RED)
+        #     time += g.time_red_overlap
+        #     self.event_target_odd_TL(time, TL_Event.GREEN)
+        #     time += g.time_green
+        #     self.event_target_odd_TL(time, TL_Event.YELLOW)
+        #     time += g.time_yellow
+        #     self.event_target_odd_TL(time, TL_Event.RED)
+        #     time += g.time_red_overlap
 
     def event_target_all_TL(self, curr_time, action):
         for i in range(0,4):
@@ -56,6 +56,9 @@ class TrafficLightManager:
     def handle_event(self, event: Event):
         # print(f'id after is {id(event)}')
         self.lights[event.idx].handle_event(event)
+
+    def get_TL_references(self):
+        return [self.lights[0], self.lights[1], self.lights[2], self.lights[3]]
 
     
             

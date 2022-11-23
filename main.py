@@ -25,13 +25,13 @@ def sim_main():
     perf_label = label(pos=vector(-100,2,100), text="waiting for clock")
 
     cmgr = CarManager() # car manager instantiates the env
-    for i in range(0,8):
-        cmgr.add_car(i)
+    # for i in range(0,8):
+    cmgr.add_car(1)
 
     # create time class?
     t = 0
     delta_t = 0.1
-    total_time = 100
+    total_time = 150
 
     start_time = 0
     end_time = 0
@@ -44,9 +44,19 @@ def sim_main():
     lmgr = TrafficLightManager()
     lmgr.generate_events(total_time)
 
+    print("reach here")
+
+    # give carmanager awareness of traffic lights
+    cmgr.set_TL_references(lmgr.get_TL_references())
+
+    print("reach here2")
+
     # variables for handling events in the sim loop
     next_event = None
     executed_event = True
+
+    run_once = False
+    run_once2 = False
 
     while(t < total_time):
 
@@ -58,21 +68,37 @@ def sim_main():
         rate(40)
 
 
-        # L.text = str(t)
+        L.text = str(round(t,2))
 
         cmgr.run(t)
+               
+        while True:
+            if executed_event:
+                if Event.q.qsize() != 0:
+                    next_event = Event.q.get()
+                else:
+                    break
+                executed_event = False 
+            if t >= next_event.time:
+                if next_event.event_type == EventType.TL_EVENT:
+                    lmgr.handle_event(next_event)
+                    # print("ran event handlers")
+                    executed_event = True
+            else:
+                break
 
-        # event fetch
-        if executed_event:
-            next_event = Event.q.get()
-            executed_event = False        
-        
-        #event execute
-        if t >= next_event.time:
-            if next_event.event_type == EventType.TL_EVENT:
-                # print(f'id before is {id(next_event)}')
-                lmgr.handle_event(next_event)
-            executed_event = True
+        if t > 20 and run_once == False:
+            # for i in range(0,8):
+            #   cmgr.add_car(i)
+            # cmgr.add_car(1)
+            run_once = True
+
+        if t > 40 and run_once2 == False:
+            # for i in range(0,8):
+            #     cmgr.add_car(i)
+            # cmgr.add_car(1)
+            run_once2 = True
+            
 
 
 

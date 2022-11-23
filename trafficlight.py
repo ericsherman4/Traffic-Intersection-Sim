@@ -72,7 +72,7 @@ class TrafficLight:
     def handle_event(self, event : Event):
         # print(f'id inside the TL class is {id(event)}')
         self.nx_state = event.action
-        print(f'time is {event.time} and nx_action is {event.action}')
+        # print(f'time is {event.time} and nx_action is {event.action}')
         self.run()
 
     def run(self):
@@ -97,3 +97,5 @@ class TrafficLight:
             # dead state
             pass
 
+    def get_state(self):
+        return self.pr_state
