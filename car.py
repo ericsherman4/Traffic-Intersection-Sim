@@ -1,7 +1,8 @@
 from vpython import vector,box, arrow, color, compound, rotate,sleep
-from config import g
+from config import g,gtime
 import random
 from math import pi
+from pid import PID,PID_Modified
 
 
 class C_States:
@@ -49,13 +50,14 @@ class Car:
         # variables for vehicle and env state
         self.vehicle.visible = visible
         self.distance_to_nearest_car = None
-        self.prev_distance_to_nearest_car = None
-        self.delta_distance = None # difference of distance to nearest car variables between two time steps
-        self.safe_travel_distance = None    # based on cars speed
+        # self.prev_distance_to_nearest_car = None
+        # self.delta_distance = None # difference of distance to nearest car variables between two time steps
+        # self.safe_travel_distance = None    # based on cars speed
+        self.prev_derror = None
 
-        # print(C_States.SPAWNING, C_States.TURN_RIGHT)
+        self.pid = PID_Modified(1.1,0.3,2, gtime.delta_t)
+        self.pid.set_limits(-g.car_max_decel, g.car_max_accel)
 
-    # cool idea, arrow is a velocity arrow that shrinks and grows based on the velocity? 
 
     def set_direction_flags(self, rot_deg):
         # determine direction
@@ -85,16 +87,16 @@ class Car:
         self.vehicle.visible = False
 
     def update_distances(self,val):
-        self.prev_distance_to_nearest_car = self.distance_to_nearest_car
+        # self.prev_distance_to_nearest_car = self.distance_to_nearest_car
         self.distance_to_nearest_car = val
 
-        if self.distance_to_nearest_car == None or val == None:
-            self.delta_distance = None
-        elif self.prev_distance_to_nearest_car == None:
-            self.delta_distance = None
-        else:
-            self.delta_distance = abs(self.distance_to_nearest_car \
-                - self.prev_distance_to_nearest_car)
+        # if self.distance_to_nearest_car == None or val == None:
+            # self.delta_distance = None
+        # elif self.prev_distance_to_nearest_car == None:
+            # self.delta_distance = None
+        # else:
+            # self.delta_distance = abs(self.distance_to_nearest_car \
+                # - self.prev_distance_to_nearest_car)
 
         # print(self.distance_to_nearest_car)
 
@@ -106,7 +108,7 @@ class Car:
         # maybe break this out into an update state variable
         # no veloicty, safe travel distnace = 4
         # each increase in 5 vel from there, means plus 1.5 in safe travel distance
-        self.safe_travel_distance = self.vel*1.5 + 4
+        # self.safe_travel_distance = self.vel*4 + 4
         
 
         # Car State Machine
@@ -116,58 +118,102 @@ class Car:
                 self.nx_state = C_States.ACCEL
 
         elif self.pr_state == C_States.ACCEL:
-            # Check if the car was despawned
+
             if not self.vehicle.visible:
                 self.nx_state = C_States.DESPAWNING
                 return
 
-            # some logic here for checking traffic light or cars in front
-            if self.distance_to_nearest_car != None:
-                if self.safe_travel_distance < self.distance_to_nearest_car:
-                    self.nx_state = C_States.DECEL
+            # d_actual = self.distance_to_nearest_car
+            t_ideal = 1.5
+            d_ideal = (t_ideal) * self.vel + 5 # t_ideal is the desired time gap
+            # d_error = d_ideal - d_actual
+            
+            # velocity error is also used
+            # so I need to take derivative of d_error
+            # v_error = (d_error - self.prev_derror) * (curr_time - self.time)
 
-
-            if self.vel < g.car_max_speed:
-                self.accel_move(curr_time,g.car_accel)
-                self.nx_state = C_States.ACCEL
+            follow_distance = 50
+            v_set = g.car_max_speed
+            a = 0
+            if self.distance_to_nearest_car == None:
+                a = self.pid.update(g.size*2, g.size*2, v_set, self.vel)
+                
+            elif self.vel > v_set or (self.vel <= v_set and self.distance_to_nearest_car > follow_distance):
+                    # d_error = 0
+                    # v_error = v_set - self.vel
+                    a = self.pid.update(self.distance_to_nearest_car, self.distance_to_nearest_car, v_set, self.vel)
+            elif v_set > 0: #TODO: THIS IS TEMP, g.car_max_speed is target velocity which im assuming is the cars in fronts vel, NEEDS TO BE CHANGED!
+                # d_error = d_ideal - d_actual
+                # v_error = g.car_max_speed - self.vel
+                a = self.pid.update(d_ideal, self.distance_to_nearest_car, 0, self.vel)
             else:
-                self.nx_state = C_States.CONSTANT_VEL
+                # d_error = d_ideal - d_actual
+                # v_error = g.car_max_speed - self.vel 
+                a = self.pid.update(d_ideal, self.distance_to_nearest_car, 0, self.vel)
+
+            
+            self.accel_move(curr_time, a)
+            # print(f'acc: {a}, vel: {self.vel}')
 
 
-        elif self.pr_state == C_States.CONSTANT_VEL:
-            # Check if the car was despawned
-            if not self.vehicle.visible:
-                self.nx_state = C_States.DESPAWNING
-                return 
 
-            # perform velocity move
-            self.vel_move(curr_time)
 
-            # determine next state
-            if self.distance_to_nearest_car != None:
-                # print(f'{self.safe_travel_distance} and {self.distance_to_nearest_car}')
-                if self.safe_travel_distance > self.distance_to_nearest_car:
-                    self.nx_state = C_States.DECEL
-            else:
-                self.nx_state = C_States.CONSTANT_VEL    
+
+
+
+        # elif self.pr_state == C_States.ACCEL:
+        #     # Check if the car was despawned
+        #     if not self.vehicle.visible:
+        #         self.nx_state = C_States.DESPAWNING
+        #         return
+
+        #     # some logic here for checking traffic light or cars in front
+        #     if self.distance_to_nearest_car != None:
+        #         if self.safe_travel_distance < self.distance_to_nearest_car:
+        #             self.nx_state = C_States.DECEL
+
+
+        #     if self.vel < g.car_max_speed:
+        #         self.accel_move(curr_time,g.car_accel)
+        #         self.nx_state = C_States.ACCEL
+        #     else:
+        #         self.nx_state = C_States.CONSTANT_VEL
+
+
+        # elif self.pr_state == C_States.CONSTANT_VEL:
+        #     # Check if the car was despawned
+        #     if not self.vehicle.visible:
+        #         self.nx_state = C_States.DESPAWNING
+        #         return 
+
+        #     # perform velocity move
+        #     self.vel_move(curr_time)
+
+        #     # determine next state
+        #     if self.distance_to_nearest_car != None:
+        #         # print(f'{self.safe_travel_distance} and {self.distance_to_nearest_car}')
+        #         if self.safe_travel_distance > self.distance_to_nearest_car:
+        #             self.nx_state = C_States.DECEL
+        #     else:
+        #         self.nx_state = C_States.CONSTANT_VEL    
 
             
             
 
-        elif self.pr_state == C_States.DECEL:
-            # map will return a positive value, need to negate to get negative acceleration
-            # print("entered state decel")
-            if self.delta_distance == None:
-                self.nx_state = C_States.ACCEL
-                return
+        # elif self.pr_state == C_States.DECEL:
+        #     # map will return a positive value, need to negate to get negative acceleration
+        #     # print("entered state decel")
+        #     if self.delta_distance == None:
+        #         self.nx_state = C_States.ACCEL
+        #         return
 
-            a = self.map(self.delta_distance*2.5, 0, self.safe_travel_distance/4, 0, g.car_max_decel)
-            self.accel_move(curr_time, -a)
-            print(f'{self.delta_distance*2}, 0, {self.safe_travel_distance/4}, 0, {g.car_max_decel} and accel is: {a} and new v is {self.vel}')
+        #     a = self.map(self.delta_distance*2.5, 0, self.safe_travel_distance/4, 0, g.car_max_decel)
+        #     self.accel_move(curr_time, -a)
+        #     print(f'{self.delta_distance*2}, 0, {self.safe_travel_distance/4}, 0, {g.car_max_decel} and accel is: {a} and new v is {self.vel}')
 
-            if(self.vel <= 0.1):
-                self.vel = 0
-                self.nx_state = C_States.STOPPED
+        #     if(self.vel <= 0.1):
+        #         self.vel = 0
+        #         self.nx_state = C_States.STOPPED
             
 
         elif self.pr_state == C_States.DESPAWNING:
@@ -175,8 +221,8 @@ class Car:
             # might get rid of this state
             self.nx_state = C_States.WAITING
 
-        elif self.pr_state == C_States.STOPPED:
-            print("in stopped state")
+        # elif self.pr_state == C_States.STOPPED:
+        #     print("in stopped state")
         
 
         # update internal time
@@ -198,8 +244,13 @@ class Car:
 
     def accel_move(self, curr_time, a):
         self.vel = self.vel + a*(curr_time - self.time)
+        if self.vel > g.car_max_speed:
+            self.vel = g.car_max_speed
+        elif self.vel < 0:
+            self.vel = 0
         self.vel_move(curr_time)
 
+    # unused
     def map(self,val, min_range1, max_range1, min_range2, max_range2):
         if (max_range1 - min_range1) == 0 or val == None:
             return 0

@@ -11,7 +11,7 @@ from event import TL_Event
 
 class Lane:
 
-    def __init__(self, max_cars, max_cars_on_road, lane_start_pos : vector, lane_end_pos : vector, stop_line_pos, car_rot_deg):
+    def __init__(self, identifier, max_cars, max_cars_on_road, lane_start_pos : vector, lane_end_pos : vector, stop_line_pos, car_rot_deg):
         self.cars = np.empty(max_cars, dtype=type(Car))
         self.max_cars = max_cars
         self.max_cars_on_road = max_cars_on_road
@@ -19,6 +19,7 @@ class Lane:
         self.lane_start = lane_start_pos
         self.lane_end = lane_end_pos
         self.stop_line_pos = stop_line_pos
+        self.identifier = identifier
 
         # Pointers to point to the cars that are currently on the road
         self.start_ptr = 0
@@ -78,38 +79,75 @@ class Lane:
         # TODO: CHANGE THESE VARIABLE NAMES!!!!!!!!!!!
 
         if self.cars_on_road == 0:
-            return
+            return 
 
-        first_car_behind_light = False
+        # first_car_behind_light = False
         # determine the closest distance based on whether its a car or the traffic light for the farthest car
-        if self.cars[self.start_ptr].lane_pos > self.stop_line_pos:
-            self.cars[self.start_ptr].update_distances(None)
-        else:
-            first_car_behind_light = True
-            if self.TL.get_state == TL_Event.GREEN:
+        # some lanes coordinate axes is backwards (car is traveling in the negative direction instead of the forward)
+        # lanes 4,5 and 3,2 are backwards
+        if self.identifier < 6 and self.identifier > 1:
+            if self.cars[self.start_ptr].lane_pos < self.stop_line_pos:
                 self.cars[self.start_ptr].update_distances(None)
             else:
-                self.cars[self.start_ptr].update_distances(self.stop_line_pos \
-                    - self.cars[self.start_ptr].lane_pos)
+                # first_car_behind_light = True # the car is behind the light
+                if self.TL.get_state() == TL_Event.GREEN:
+                    self.cars[self.start_ptr].update_distances(None)
+                else:
+                    # flip order of the subtraction
+                    self.cars[self.start_ptr].update_distances(self.cars[self.start_ptr].lane_pos \
+                        - self.stop_line_pos)
+        else:
+            if self.cars[self.start_ptr].lane_pos > self.stop_line_pos:
+                self.cars[self.start_ptr].update_distances(None)
+            else:
+                first_car_behind_light = True # the car is behind the light
+                if self.TL.get_state() == TL_Event.GREEN:
+                    self.cars[self.start_ptr].update_distances(None)
+                else:
+                    self.cars[self.start_ptr].update_distances(self.stop_line_pos \
+                        - self.cars[self.start_ptr].lane_pos)
         
+        # if self.identifier == 3:
+            # print(f'lane_pos is {self.cars[self.start_ptr].lane_pos} and the stop line is {self.stop_line_pos} and the distance is {self.cars[self.start_ptr].distance_to_nearest_car}' )
+
+
         # get the car in front and subtract it from the current car and that is the distance between them
         # range starts at 1 to ignore furthest along car
         # wont get executed if theres only one car on the road
+    
+
+        found_car_behind_light = False
         for i in range(1, self.cars_on_road):
             idx = (self.start_ptr + i) % self.max_cars
             # first car is in front of the light so here we need to check which car is behind the light
-            if not first_car_behind_light:
-                if self.cars[idx].lane_pos > self.stop_line_pos:
-                    self.cars[idx].update_distances(
-                        self.cars[(idx+1) % self.max_cars].lane_pos
-                            - self.cars[idx].lane_pos)
-                else:
-                    self.cars[idx].update_distances(
-                        self.stop_line_pos - self.cars[idx].lane_pos)
-            else:
-                self.cars[idx].update_distances(
-                    self.cars[(idx+1) % self.max_cars].lane_pos
-                        - self.cars[idx].lane_pos)
+            # TODO: THIS LOGIC IS DEFINITELY MESSED UP and NEEDS FURTHER INVESTIGATION. THE bool there i think needs to updated each loop or something
+            # if not first_car_behind_light:
+
+            # calculate two distances
+            dis_to_car = self.cars[(idx-1) % self.max_cars].lane_pos - self.cars[idx].lane_pos
+            dis_to_light = 0
+
+            if self.TL.get_state() == TL_Event.GREEN:
+                dis_to_light = dis_to_car
+            else: 
+                dis_to_light = self.stop_line_pos - self.cars[idx].lane_pos
+
+            self.cars[idx].update_distances(min(dis_to_car, dis_to_light))
+
+            # if the car is in front of the stop line, then the distance is to the nearest car
+            # if self.cars[idx].lane_pos > self.stop_line_pos:
+            #     self.cars[idx].update_distances(
+            #         self.cars[(idx-1) % self.max_cars].lane_pos
+            #             - self.cars[idx].lane_pos)
+            # else: 
+            #     self.cars[idx].update_distances(
+            #         self.stop_line_pos - self.cars[idx].lane_pos)
+            # else:
+            #     self.cars[idx].update_distances(
+            #         self.cars[(idx+1) % self.max_cars].lane_pos
+            #             - self.cars[idx].lane_pos)
+        
+        # print(f'lead car {self.cars[self.start_ptr].distance_to_nearest_car} and following car {self.cars[self.start_ptr+1].distance_to_nearest_car}')
 
     def set_TL_reference(self, TL : TrafficLight):
         self.TL = TL
@@ -139,7 +177,7 @@ class CarManager:
         # generate the lanes
 
         for i in range(0,self.num_lanes):
-            self.lanes[i] = Lane(g.max_cars,g.max_cars_on_road,
+            self.lanes[i] = Lane(i, g.max_cars ,g.max_cars_on_road,
                                  self.env.lane_pos_start[i], 
                                  self.env.lane_pos_end[i],
                                  self.env.stop_line_position[i],
@@ -182,12 +220,12 @@ class CarManager:
             self.lanes[idx].activate()
 
     def set_TL_references(self, TLs : list):
-        self.lanes[0].set_TL_reference(TLs[3])
-        self.lanes[1].set_TL_reference(TLs[3])
+        self.lanes[0].set_TL_reference(TLs[2])
+        self.lanes[1].set_TL_reference(TLs[2])
         self.lanes[2].set_TL_reference(TLs[0])
         self.lanes[3].set_TL_reference(TLs[0])
-        self.lanes[4].set_TL_reference(TLs[2])
-        self.lanes[5].set_TL_reference(TLs[2])
+        self.lanes[4].set_TL_reference(TLs[3])
+        self.lanes[5].set_TL_reference(TLs[3])
         self.lanes[6].set_TL_reference(TLs[1])
         self.lanes[7].set_TL_reference(TLs[1])
 

@@ -1,4 +1,4 @@
-from config import g
+from config import g, gtime
 from vpython import *
 from env import Env, Axes
 from trafficlight import TrafficLight
@@ -21,7 +21,7 @@ def sim_main():
     # Create axes for direction visualization
     Axes()
 
-    L = label(pos=vector(0,2,0), text="waiting to start")
+    L = label(pos=vector(0,40,0), text="waiting to start")
     perf_label = label(pos=vector(-100,2,100), text="waiting for clock")
 
     cmgr = CarManager() # car manager instantiates the env
@@ -30,7 +30,7 @@ def sim_main():
 
     # create time class?
     t = 0
-    delta_t = 0.1
+    delta_t = gtime.delta_t
     total_time = 150
 
     start_time = 0
@@ -44,12 +44,8 @@ def sim_main():
     lmgr = TrafficLightManager()
     lmgr.generate_events(total_time)
 
-    print("reach here")
-
     # give carmanager awareness of traffic lights
     cmgr.set_TL_references(lmgr.get_TL_references())
-
-    print("reach here2")
 
     # variables for handling events in the sim loop
     next_event = None
@@ -57,6 +53,7 @@ def sim_main():
 
     run_once = False
     run_once2 = False
+    run_once3 = False
 
     while(t < total_time):
 
@@ -90,14 +87,18 @@ def sim_main():
         if t > 20 and run_once == False:
             # for i in range(0,8):
             #   cmgr.add_car(i)
-            # cmgr.add_car(1)
+            cmgr.add_car(1)
             run_once = True
 
         if t > 40 and run_once2 == False:
             # for i in range(0,8):
             #     cmgr.add_car(i)
-            # cmgr.add_car(1)
+            cmgr.add_car(1)
             run_once2 = True
+
+        if t > 60 and run_once3 == False:
+            cmgr.add_car(1)
+            run_once3 = True
             
 
 
