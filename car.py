@@ -28,6 +28,7 @@ class Car:
         self.body = box(pos = vector(pos.x, offset, pos.z), width = g.car_width, height = g.car_height, length = g.car_length, 
                            color= g.car_colors[random.randint(0,len(g.car_colors)-1)])
         self.dir = arrow(pos = vector(pos.x, offset,pos.z), axis = vector(-g.car_width-8,0,0), color = color.red)
+        self.center = arrow(pos = vector(pos.x, 0 , pos.z), axis = vector(0, 15, 0), color = color.red)
 
         # Create compound object and rotate it so its properly orientated in the lane
         self.vehicle = compound([self.body, self.dir], origin = self.body.pos)
@@ -49,6 +50,7 @@ class Car:
 
         # variables for vehicle and env state
         self.vehicle.visible = visible
+        self.center.visible = visible
         self.distance_to_nearest_car = None
         # self.prev_distance_to_nearest_car = None
         # self.delta_distance = None # difference of distance to nearest car variables between two time steps
@@ -68,23 +70,25 @@ class Car:
 
         if rot_deg == 0:
             self.xaxis_plus = True
-            self.lane_pos = self.vehicle.pos.x
+            self.lane_pos = self.vehicle.pos.x #- g.car_length_div2
         elif rot_deg == 180:
             self.xaxis_minus = True
-            self.lane_pos = self.vehicle.pos.x
+            self.lane_pos = self.vehicle.pos.x #+ g.car_length_div2
         elif rot_deg == 270:
             self.zaxis_plus = True
-            self.lane_pos = self.vehicle.pos.z
+            self.lane_pos = self.vehicle.pos.z #- g.car_length_div2
         elif rot_deg == 90:
             self.zaxis_minus = True
-            self.lane_pos = self.vehicle.pos.z
+            self.lane_pos = self.vehicle.pos.z #+ g.car_length_div2
 
 
     def visible(self):
         self.vehicle.visible = True
+        self.center.visible = True
 
     def invisible(self):
         self.vehicle.visible = False
+        self.center.visible = False
 
     def update_distances(self,val):
         # self.prev_distance_to_nearest_car = self.distance_to_nearest_car
@@ -231,16 +235,21 @@ class Car:
     def vel_move(self, curr_time):
         if self.xaxis_plus:
             self.vehicle.pos.x = self.vehicle.pos.x - self.vel*(curr_time - self.time)
-            self.lane_pos = self.vehicle.pos.x
+            self.lane_pos = self.vehicle.pos.x #- g.car_length_div2
+            self.center.pos.x = self.lane_pos
         elif self.xaxis_minus:
             self.vehicle.pos.x = self.vehicle.pos.x + self.vel*(curr_time - self.time)
-            self.lane_pos = self.vehicle.pos.x
+            self.lane_pos = self.vehicle.pos.x #+ g.car_length_div2
+            self.center.pos.x = self.lane_pos
         elif self.zaxis_plus:
             self.vehicle.pos.z = self.vehicle.pos.z - self.vel*(curr_time - self.time)
-            self.lane_pos = self.vehicle.pos.z
+            self.lane_pos = self.vehicle.pos.z #- g.car_length_div2
+            self.center.pos.z = self.lane_pos
         elif self.zaxis_minus:
             self.vehicle.pos.z = self.vehicle.pos.z + self.vel*(curr_time - self.time)
-            self.lane_pos = self.vehicle.pos.z
+            self.lane_pos = self.vehicle.pos.z #+ g.car_length_div2
+            self.center.pos.z = self.lane_pos
+
 
     def accel_move(self, curr_time, a):
         self.vel = self.vel + a*(curr_time - self.time)

@@ -19,19 +19,21 @@ def sim_main():
     scene.range = 46.668804816827986
 
     # Create axes for direction visualization
-    Axes()
+    # Axes()
 
-    L = label(pos=vector(0,40,0), text="waiting to start")
+    L = label(pos=vector(0,100,0), text="generating cars objects")
     perf_label = label(pos=vector(-100,2,100), text="waiting for clock")
 
     cmgr = CarManager() # car manager instantiates the env
-    # for i in range(0,8):
-    cmgr.add_car(1)
+    L.text = "adding cars and generating traffic lights"
+    
+    for i in range(0,8):
+        cmgr.add_car(i)
 
     # create time class?
     t = 0
     delta_t = gtime.delta_t
-    total_time = 150
+    total_time = 200
 
     start_time = 0
     end_time = 0
@@ -85,19 +87,20 @@ def sim_main():
                 break
 
         if t > 20 and run_once == False:
-            # for i in range(0,8):
-            #   cmgr.add_car(i)
-            cmgr.add_car(1)
+            for i in range(0,8):
+                cmgr.add_car(i)
+            # cmgr.add_car(1)
             run_once = True
 
         if t > 40 and run_once2 == False:
-            # for i in range(0,8):
-            #     cmgr.add_car(i)
+            for i in range(0,4):
+                cmgr.add_car(i*2)
             cmgr.add_car(1)
             run_once2 = True
 
         if t > 60 and run_once3 == False:
-            cmgr.add_car(1)
+            for i in range(0,8):
+                cmgr.add_car(i)
             run_once3 = True
             
 

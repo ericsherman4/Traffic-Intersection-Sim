@@ -31,6 +31,8 @@ class Lane:
 
         # for awareness of traffic lights
         self.TL = None
+        # used for debugging!
+        self.TL_state_prev = None
 
     def get_car_count(self):
         return self.cars_on_road
@@ -85,6 +87,7 @@ class Lane:
         # determine the closest distance based on whether its a car or the traffic light for the farthest car
         # some lanes coordinate axes is backwards (car is traveling in the negative direction instead of the forward)
         # lanes 4,5 and 3,2 are backwards
+
         if self.identifier < 6 and self.identifier > 1:
             if self.cars[self.start_ptr].lane_pos < self.stop_line_pos:
                 self.cars[self.start_ptr].update_distances(None)
@@ -93,9 +96,12 @@ class Lane:
                 if self.TL.get_state() == TL_Event.GREEN:
                     self.cars[self.start_ptr].update_distances(None)
                 else:
-                    # flip order of the subtraction
-                    self.cars[self.start_ptr].update_distances(self.cars[self.start_ptr].lane_pos \
-                        - self.stop_line_pos)
+                    # flip order of the subtraction here because the lane is backwards
+                    dis = self.cars[self.start_ptr].lane_pos - self.stop_line_pos
+                    if dis < 25 and self.TL.get_state() == TL_Event.YELLOW:
+                        self.cars[self.start_ptr].update_distances(None)
+                    else: 
+                        self.cars[self.start_ptr].update_distances(dis)
         else:
             if self.cars[self.start_ptr].lane_pos > self.stop_line_pos:
                 self.cars[self.start_ptr].update_distances(None)
@@ -104,8 +110,15 @@ class Lane:
                 if self.TL.get_state() == TL_Event.GREEN:
                     self.cars[self.start_ptr].update_distances(None)
                 else:
-                    self.cars[self.start_ptr].update_distances(self.stop_line_pos \
-                        - self.cars[self.start_ptr].lane_pos)
+                    dis = self.stop_line_pos - self.cars[self.start_ptr].lane_pos
+                    if dis < 25 and self.TL.get_state() == TL_Event.YELLOW:
+                        self.cars[self.start_ptr].update_distances(None)
+                    else: 
+                        self.cars[self.start_ptr].update_distances(dis)
+
+        
+
+            
         
         # if self.identifier == 3:
             # print(f'lane_pos is {self.cars[self.start_ptr].lane_pos} and the stop line is {self.stop_line_pos} and the distance is {self.cars[self.start_ptr].distance_to_nearest_car}' )
@@ -116,7 +129,6 @@ class Lane:
         # wont get executed if theres only one car on the road
     
 
-        found_car_behind_light = False
         for i in range(1, self.cars_on_road):
             idx = (self.start_ptr + i) % self.max_cars
             # first car is in front of the light so here we need to check which car is behind the light
@@ -124,30 +136,64 @@ class Lane:
             # if not first_car_behind_light:
 
             # calculate two distances
-            dis_to_car = self.cars[(idx-1) % self.max_cars].lane_pos - self.cars[idx].lane_pos
+            dis_to_car = 0
             dis_to_light = 0
 
+            # find the distance to the car, adjusting for lane direction
+            if self.identifier < 6 and self.identifier > 1:
+                dis_to_car = self.cars[idx].lane_pos - self.cars[(idx-1) % self.max_cars].lane_pos
+            else:
+                dis_to_car = self.cars[(idx-1) % self.max_cars].lane_pos - self.cars[idx].lane_pos
+
+            # find the distance to the light. if the light is green there is no limit distance
             if self.TL.get_state() == TL_Event.GREEN:
                 dis_to_light = dis_to_car
             else: 
-                dis_to_light = self.stop_line_pos - self.cars[idx].lane_pos
+                # the light is yellow or red
+                # first check whether the car is behind the light or not
+                # if the car is in front of the light, then dis_to_light should be ignored
+                # and of course, adjust for car direction
+                if self.identifier < 6 and self.identifier > 1: 
+                    if self.cars[idx].lane_pos < self.stop_line_pos:
+                        dis_to_light = dis_to_car
+                    else:
+                        # the car is behind the stop line and the light is red/yellow
+                        dis_to_light =  self.cars[idx].lane_pos - self.stop_line_pos
+                        if dis_to_light < 25 and self.TL.get_state() == TL_Event.YELLOW:
+                            dis_to_light = dis_to_car
+                else: 
+                    if self.cars[idx].lane_pos > self.stop_line_pos:
+                        dis_to_light = dis_to_car
+                    else:
+                        dis_to_light = self.stop_line_pos - self.cars[idx].lane_pos
+                        if dis_to_light < 25 and self.TL.get_state() == TL_Event.YELLOW:
+                            dis_to_light = dis_to_car
+                
+
+                # if self.identifier < 6 and self.identifier > 1:
+                #     dis_to_light =  self.cars[idx].lane_pos - self.stop_line_pos
+                # else:    
+                #     dis_to_light = self.stop_line_pos - self.cars[idx].lane_pos
 
             self.cars[idx].update_distances(min(dis_to_car, dis_to_light))
-
-            # if the car is in front of the stop line, then the distance is to the nearest car
-            # if self.cars[idx].lane_pos > self.stop_line_pos:
-            #     self.cars[idx].update_distances(
-            #         self.cars[(idx-1) % self.max_cars].lane_pos
-            #             - self.cars[idx].lane_pos)
-            # else: 
-            #     self.cars[idx].update_distances(
-            #         self.stop_line_pos - self.cars[idx].lane_pos)
-            # else:
-            #     self.cars[idx].update_distances(
-            #         self.cars[(idx+1) % self.max_cars].lane_pos
-            #             - self.cars[idx].lane_pos)
         
-        # print(f'lead car {self.cars[self.start_ptr].distance_to_nearest_car} and following car {self.cars[self.start_ptr+1].distance_to_nearest_car}')
+
+        # if self.identifier == 2:
+        #     if self.TL.get_state() != self.TL_state_prev:
+        #         thing = ""
+        #         if self.TL.get_state() == TL_Event.GREEN:
+        #             thing = "green"
+        #         elif self.TL.get_state() == TL_Event.RED:
+        #             thing = "red"
+        #         elif self.TL.get_state() == TL_Event.YELLOW:
+        #             thing = "yellow"
+        #         print(f"state change detected, now its {thing}")
+            # print(f'lead cars dis: {self.cars[self.start_ptr].distance_to_nearest_car} ptr = {self.start_ptr}' )
+            # print(f'lead car {self.cars[self.start_ptr].distance_to_nearest_car}, lead car pos {self.cars[self.start_ptr].lane_pos} ,following car {self.cars[self.start_ptr+1].distance_to_nearest_car} and ptr {self.start_ptr} 2nd car pos {self.cars[self.start_ptr+1].lane_pos}')
+            # print(f'3rd car {self.cars[2].distance_to_nearest_car}, lead car pos {self.cars[2].lane_pos} vel {self.cars[2].vel}, stop line pos: {self.stop_line_pos}')
+            # print(f' 3rd car {self.cars[2].distance_to_nearest_car}')  
+
+        self.TL_state_prev = self.TL.get_state()
 
     def set_TL_reference(self, TL : TrafficLight):
         self.TL = TL

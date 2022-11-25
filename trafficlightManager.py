@@ -13,10 +13,10 @@ class TrafficLightManager:
         self.lights = np.empty(4, dtype=TrafficLight)
         
         temp_pos = g.roadwidth/2
-        positions = [vector(temp_pos,20,-temp_pos/2),
-                     vector(-temp_pos/2,20,-temp_pos),
-                     vector(-temp_pos,20,temp_pos/2),
-                     vector(temp_pos/2,20,temp_pos)]
+        positions = [vector(temp_pos,30,-temp_pos/2),
+                     vector(-temp_pos/2,30,-temp_pos),
+                     vector(-temp_pos,30,temp_pos/2),
+                     vector(temp_pos/2,30,temp_pos)]
     
 
 

@@ -27,6 +27,7 @@ class g:
     # car
     car_width = 8
     car_length = 18
+    car_length_div2 = car_length/2
     car_height = 8
     car_colors= [color.red, color.yellow, color.green, 
                 color.orange, color.white, 
