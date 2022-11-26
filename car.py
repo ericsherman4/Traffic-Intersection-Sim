@@ -1,4 +1,4 @@
-from vpython import vector,box, arrow, color, compound, rotate,sleep
+from vpython import vector,box, arrow, color, compound, rotate,sleep, local_light
 from config import g,gtime
 import random
 from math import pi
@@ -23,12 +23,13 @@ class C_States:
 class Car:
     # the y position passed in for pos is ignored  
     def __init__(self, pos :vector, rot_deg, visible):
-        offset = g.car_height >> 1
+        self.offset = g.car_height >> 1
         # the x z plane is actually the surface of the map, but treating it as x y since its more natural. so y position is being passed in to z parameter for vector
-        self.body = box(pos = vector(pos.x, offset, pos.z), width = g.car_width, height = g.car_height, length = g.car_length, 
-                           color= g.car_colors[random.randint(0,len(g.car_colors)-1)])
-        self.dir = arrow(pos = vector(pos.x, offset,pos.z), axis = vector(-g.car_width-8,0,0), color = color.red)
-        self.center = arrow(pos = vector(pos.x, 0 , pos.z), axis = vector(0, 15, 0), color = color.red)
+        self.body = box(pos = vector(pos.x, self.offset, pos.z), width = g.car_width, height = g.car_height, length = g.car_length, 
+                           color= g.car_colors[random.randint(0,len(g.car_colors)-1)], emissive= True)
+        # self.lights = local_light(pos=vector(pos.x, self.offset, pos.z), color=color.gray(0.4))
+        self.dir = arrow(pos = vector(pos.x, self.offset,pos.z), axis = vector(-g.car_width-8,0,0), color = color.red)
+        self.center = arrow(pos = vector(pos.x, 0 , pos.z), axis = vector(0, 15, 0), color = color.white, emissive = True)
 
         # Create compound object and rotate it so its properly orientated in the lane
         self.vehicle = compound([self.body, self.dir], origin = self.body.pos)
@@ -51,6 +52,7 @@ class Car:
         # variables for vehicle and env state
         self.vehicle.visible = visible
         self.center.visible = visible
+        # self.lights.visible = visible
         self.distance_to_nearest_car = None
         # self.prev_distance_to_nearest_car = None
         # self.delta_distance = None # difference of distance to nearest car variables between two time steps
@@ -81,14 +83,18 @@ class Car:
             self.zaxis_minus = True
             self.lane_pos = self.vehicle.pos.z #+ g.car_length_div2
 
+    def reset_pos(self, pos):
+        self.vehicle.pos = vector(pos.x, self.offset, pos.z)
 
     def visible(self):
         self.vehicle.visible = True
         self.center.visible = True
+        # self.lights.visible = True
 
     def invisible(self):
         self.vehicle.visible = False
         self.center.visible = False
+        # self.lights.visible = False
 
     def update_distances(self,val):
         # self.prev_distance_to_nearest_car = self.distance_to_nearest_car
@@ -129,7 +135,7 @@ class Car:
 
             # d_actual = self.distance_to_nearest_car
             t_ideal = 1.5
-            d_ideal = (t_ideal) * self.vel + 5 # t_ideal is the desired time gap
+            d_ideal = (t_ideal) * self.vel  +10 # t_ideal is the desired time gap
             # d_error = d_ideal - d_actual
             
             # velocity error is also used
@@ -237,18 +243,22 @@ class Car:
             self.vehicle.pos.x = self.vehicle.pos.x - self.vel*(curr_time - self.time)
             self.lane_pos = self.vehicle.pos.x #- g.car_length_div2
             self.center.pos.x = self.lane_pos
+            # self.lights.pos.x = self.lane_pos
         elif self.xaxis_minus:
             self.vehicle.pos.x = self.vehicle.pos.x + self.vel*(curr_time - self.time)
             self.lane_pos = self.vehicle.pos.x #+ g.car_length_div2
             self.center.pos.x = self.lane_pos
+            # self.lights.pos.x = self.lane_pos
         elif self.zaxis_plus:
             self.vehicle.pos.z = self.vehicle.pos.z - self.vel*(curr_time - self.time)
             self.lane_pos = self.vehicle.pos.z #- g.car_length_div2
             self.center.pos.z = self.lane_pos
+            # self.lights.pos.z = self.lane_pos
         elif self.zaxis_minus:
             self.vehicle.pos.z = self.vehicle.pos.z + self.vel*(curr_time - self.time)
             self.lane_pos = self.vehicle.pos.z #+ g.car_length_div2
             self.center.pos.z = self.lane_pos
+            # self.lights.pos.z = self.lane_pos
 
 
     def accel_move(self, curr_time, a):

@@ -5,7 +5,8 @@ from math import pi
 class Env:
     def __init__(self):
         road_color = vector(0.2,0.2,0.2)
-        box(pos=vector(0,-10,0), height = 20, width = g.size, length = g.size, color = color.green)
+        box(pos=vector(0,-10,0), height = 20, width = g.size, length = g.size/4, color = color.green)
+        box(pos=vector(0,-10,0), height = 20, width = g.size/4, length = g.size, color = color.green)
         box(pos=vector(0,0.3,0), height = 0.2, width = g.roadwidth, length = g.size, color = road_color)
         box(pos=vector(0,0.3,0), height = 0.2, width = g.size, length= g.roadwidth, color = road_color)
 
@@ -23,11 +24,11 @@ class Env:
         for i in range(0,4):
             if g.animate_loading:
                 sleep(0.2)
-            line1 = box(pos = vector(yellow_lane_center,0,g.yellow_line_spacing_c2c >> 1), height = 1, width = g.yellow_line_width, length = lane_length, color=color.yellow)
-            line2 = box(pos = vector(yellow_lane_center,0,-g.yellow_line_spacing_c2c >> 1), height = 1, width = g.yellow_line_width, length = lane_length, color=color.yellow)
+            line1 = box(pos = vector(yellow_lane_center,0,g.yellow_line_spacing_c2c >> 1), height = 1, width = g.yellow_line_width, length = lane_length, color=color.yellow, emissive= True)
+            line2 = box(pos = vector(yellow_lane_center,0,-g.yellow_line_spacing_c2c >> 1), height = 1, width = g.yellow_line_width, length = lane_length, color=color.yellow, emissive = True)
             line1.rotate(angle=pi/2*i, axis = vector(0,1,0), origin=vector(0,0,0))
             line2.rotate(angle=pi/2*i, axis = vector(0,1,0), origin=vector(0,0,0))
-            stop_line = box(pos=vector(stop_line_position,0,0), height= 1.2, width = stop_line_length, length= g.white_line_width)
+            stop_line = box(pos=vector(stop_line_position,0,0), height= 1.2, width = stop_line_length, length= g.white_line_width, emissive= True)
             stop_line.rotate(angle=pi/2*i, axis = vector(0,1,0), origin=vector(0,0,0))
         
         if g.animate_loading:
@@ -36,8 +37,8 @@ class Env:
         pos_of_dashed_line = g.roadwidth/4
         while(count < white_lane_end):
             for i in range(0,4):
-                line1 = box(pos=vector(count, 0, pos_of_dashed_line), height = 1.2, width = 1, length = g.dashed_line_length, color= color.white)
-                line2 = box(pos=vector(count, 0, -pos_of_dashed_line), height = 1.2, width = 1, length = g.dashed_line_length, color= color.white)
+                line1 = box(pos=vector(count, 0, pos_of_dashed_line), height = 1.2, width = 1, length = g.dashed_line_length, color= color.white, emissive = True)
+                line2 = box(pos=vector(count, 0, -pos_of_dashed_line), height = 1.2, width = 1, length = g.dashed_line_length, color= color.white, emissive = True)
                 line1.rotate(angle=pi/2*i, axis = vector(0,1,0), origin=vector(0,0,0))
                 line2.rotate(angle=pi/2*i, axis = vector(0,1,0), origin=vector(0,0,0))
             if g.animate_loading:

@@ -6,7 +6,7 @@ from env import Env
 from vpython import vector, sphere, color, sleep, mag, mag2
 import random
 from trafficlight import TrafficLight
-from event import TL_Event
+from event import TL_Event, Event, C_Event, EventType
 
 
 class Lane:
@@ -46,6 +46,7 @@ class Lane:
     # only activates from back 
     def activate(self):
         if(not self.lane_full()): 
+            self.cars[self.end_ptr].reset_pos(self.lane_start)
             self.cars[self.end_ptr].visible()
             self.cars_on_road += 1
             self.end_ptr = (self.end_ptr + 1) % self.max_cars
@@ -274,6 +275,58 @@ class CarManager:
         self.lanes[5].set_TL_reference(TLs[3])
         self.lanes[6].set_TL_reference(TLs[1])
         self.lanes[7].set_TL_reference(TLs[1])
+
+    def generate_events(self, use_random = False, total_duration = -1):
+
+        time = 0
+
+        def increment(val):
+            nonlocal time
+            time += val
+            return time
+        
+        # use manually generated entries
+        if not use_random:
+            pass
+        else:
+            for i in range(0,8):
+                time = 0
+                for j in range(0,15):
+                    Event(increment(random.randint(10,23)), EventType.C_EVENT, C_Event.ADD_CAR, lane = i)
+
+
+
+                # Event(time + random.randint(0,15), EventType.C_EVENT, C_Event.ADD_CAR, lane= 3) 
+                # Event(time + random.randint(0,15), EventType.C_EVENT, C_Event.ADD_CAR, lane= 1) 
+                # Event(time + random.randint(0,15), EventType.C_EVENT, C_Event.ADD_CAR, lane= 0) 
+                # Event(time + random.randint(0,15), EventType.C_EVENT, C_Event.ADD_CAR, lane= 2) 
+                # Event(time + random.randint(0,15), EventType.C_EVENT, C_Event.ADD_CAR, lane= 7) 
+                # increment(20)
+                # Event(time, EventType.C_EVENT, C_Event.ADD_CAR, lane = -1)
+                # Event(time + random.randint(5,15), EventType.C_EVENT, C_Event.ADD_CAR, lane= 2) 
+                # Event(time + random.randint(5,15), EventType.C_EVENT, C_Event.ADD_CAR, lane= 5) 
+                # Event(time + random.randint(5,15), EventType.C_EVENT, C_Event.ADD_CAR, lane= 6) 
+                # Event(time + random.randint(5,15), EventType.C_EVENT, C_Event.ADD_CAR, lane= 3) 
+                # Event(time + random.randint(5,15), EventType.C_EVENT, C_Event.ADD_CAR, lane= 4)
+                # increment(15)
+                # Event(time, EventType.C_EVENT, C_Event.ADD_CAR, lane = -1)
+                # for i in range(0,7):
+                #     Event(time + random.randint(7,20), EventType.C_EVENT, C_Event.ADD_CAR, lane= i) 
+                # increment(25)
+                # Event(time, EventType.C_EVENT, C_Event.ADD_CAR, lane = -1)
+                # Event(time + random.randint(5,15), EventType.C_EVENT, C_Event.ADD_CAR, lane= 1)
+                # Event(time + random.randint(5,15), EventType.C_EVENT, C_Event.ADD_CAR, lane= 4)
+                # increment(30)
+
+
+    def handle_event(self, event : Event):
+        if event.action == C_Event.ADD_CAR:
+            self.add_car(event.lane)
+
+
+    
+
+        
 
 
 

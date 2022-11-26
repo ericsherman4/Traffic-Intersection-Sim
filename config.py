@@ -2,7 +2,7 @@ from vpython import color, vector
 
 class g:
     #env
-    size = 600
+    size = 800
     roadwidth = 40
     yellow_line_width = 1
     yellow_line_spacing_c2c = 2 #c2c = center to center
@@ -40,12 +40,12 @@ class g:
     car_accel = 1
     car_max_speed = 8
     car_starting_vel = 2
-    car_max_decel = 5
-    car_max_accel = 3
+    car_max_decel = 2
+    car_max_accel = 1
 
     # car manager
-    max_cars = 4
-    max_cars_on_road = 4
+    max_cars = 6
+    max_cars_on_road = 5
 
 class gtime:
     delta_t = 0.1

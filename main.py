@@ -18,6 +18,12 @@ def sim_main():
     scene.center = vector(-0.62705, -8.96404, 4.50215)
     scene.range = 46.668804816827986
 
+    distant_light(direction=vector(0.4,1,0.7), color=color.gray(0.22))
+    # scene.lights = []
+    scene.ambient = color.gray(0.2)
+
+    # scene.lights = []
+
     # Create axes for direction visualization
     # Axes()
 
@@ -26,14 +32,11 @@ def sim_main():
 
     cmgr = CarManager() # car manager instantiates the env
     L.text = "adding cars and generating traffic lights"
-    
-    for i in range(0,8):
-        cmgr.add_car(i)
 
     # create time class?
     t = 0
     delta_t = gtime.delta_t
-    total_time = 200
+    total_time = 400
 
     start_time = 0
     end_time = 0
@@ -48,14 +51,11 @@ def sim_main():
 
     # give carmanager awareness of traffic lights
     cmgr.set_TL_references(lmgr.get_TL_references())
+    cmgr.generate_events(True)
 
     # variables for handling events in the sim loop
     next_event = None
     executed_event = True
-
-    run_once = False
-    run_once2 = False
-    run_once3 = False
 
     while(t < total_time):
 
@@ -74,7 +74,7 @@ def sim_main():
         while True:
             if executed_event:
                 if Event.q.qsize() != 0:
-                    next_event = Event.q.get()
+                    next_event = Event.q.get(block=False)
                 else:
                     break
                 executed_event = False 
@@ -82,28 +82,12 @@ def sim_main():
                 if next_event.event_type == EventType.TL_EVENT:
                     lmgr.handle_event(next_event)
                     # print("ran event handlers")
-                    executed_event = True
+                    
+                elif next_event.event_type ==EventType.C_EVENT:
+                    cmgr.handle_event(next_event)
+                executed_event = True
             else:
                 break
-
-        if t > 20 and run_once == False:
-            for i in range(0,8):
-                cmgr.add_car(i)
-            # cmgr.add_car(1)
-            run_once = True
-
-        if t > 40 and run_once2 == False:
-            for i in range(0,4):
-                cmgr.add_car(i*2)
-            cmgr.add_car(1)
-            run_once2 = True
-
-        if t > 60 and run_once3 == False:
-            for i in range(0,8):
-                cmgr.add_car(i)
-            run_once3 = True
-            
-
 
 
         # increment sim time
@@ -115,39 +99,4 @@ def sim_main():
             perf_label.text = "comp" + str(completion_time_ms) + "\n dynam rate:" + str(dynam_rate) 
             if completion_time_ms != 0:
                 dynam_rate = 1000//completion_time_ms
-
-
-
-
-
-
-
-
-
-
-
-def sim_graphics_test():
-
-    scene = canvas(width = 800, height = 500)
-    scene.background = vector(0.25,0.25,0.25)
-    print("running")
-    box()
-    sleep(0.5)
-
-    iada = Car(40,40)
-
-    # for i in range(0,100000):
-    #     if i%5000 == 0:
-    #         print("running")
-    #     vect = vector.random()
-    #     thing = Car(vect.x*100, vect.y*100)
-    #     del thing
-
-
-
-
-    
-
-
-        
 

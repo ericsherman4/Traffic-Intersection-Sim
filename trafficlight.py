@@ -10,7 +10,7 @@ class TrafficLight:
     
     def __init__(self, pos, rotation_deg):
         # create yellow enclosure of the traffic light
-        self.frame = box(pos = pos, height = g.tl_height, width = g.tl_width, length = g.tl_length, color= color.yellow)
+        self.frame = box(pos = pos, height = g.tl_height, width = g.tl_width, length = g.tl_length, color= color.yellow, emissive = True)
         
         # make the lights (cylinders)
         # this position will be the center of the frame object (box)
