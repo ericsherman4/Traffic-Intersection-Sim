@@ -36,8 +36,10 @@ class Car:
         self.vehicle.rotate(angle= rot_deg/180*pi, axis=vector(0,1,0), origin=self.body.pos)
 
         # define vehicle properties
-        self.vel = g.car_starting_vel # potentially pass then in later as a different thing or make it random
+        self.vel = random.uniform(0,g.car_starting_vel-2) # potentially pass then in later as a different thing or make it random
+        self.vel_max = random.uniform(g.car_min_speed, g.car_max_speed)
         self.acc = 0
+        self.lead_veh_vel = 0
         self.time = 0
         self.lane_pos = None
 
@@ -60,7 +62,7 @@ class Car:
         self.prev_derror = None
 
         self.pid = PID_Modified(1.1,0.3,2, gtime.delta_t)
-        self.pid.set_limits(-g.car_max_decel, g.car_max_accel)
+        self.pid.set_limits(-random.uniform(1, g.car_max_decel), random.uniform(0.5, g.car_max_accel))
 
 
     def set_direction_flags(self, rot_deg):
@@ -82,6 +84,9 @@ class Car:
         elif rot_deg == 90:
             self.zaxis_minus = True
             self.lane_pos = self.vehicle.pos.z #+ g.car_length_div2
+
+    def set_lead_vehicle_pos(self, val):
+        self.lead_veh_vel = val
 
     def reset_pos(self, pos):
         self.vehicle.pos = vector(pos.x, self.offset, pos.z)
@@ -135,7 +140,7 @@ class Car:
 
             # d_actual = self.distance_to_nearest_car
             t_ideal = 1.5
-            d_ideal = (t_ideal) * self.vel  +10 # t_ideal is the desired time gap
+            d_ideal = (t_ideal) * self.vel  + 10 # t_ideal is the desired time gap
             # d_error = d_ideal - d_actual
             
             # velocity error is also used
@@ -145,21 +150,25 @@ class Car:
             follow_distance = 50
             v_set = g.car_max_speed
             a = 0
+
+            if self.vel == 0:
+                self.lead_veh_vel = 0
+
             if self.distance_to_nearest_car == None:
                 a = self.pid.update(g.size*2, g.size*2, v_set, self.vel)
                 
             elif self.vel > v_set or (self.vel <= v_set and self.distance_to_nearest_car > follow_distance):
-                    # d_error = 0
-                    # v_error = v_set - self.vel
-                    a = self.pid.update(self.distance_to_nearest_car, self.distance_to_nearest_car, v_set, self.vel)
-            elif v_set > 0: #TODO: THIS IS TEMP, g.car_max_speed is target velocity which im assuming is the cars in fronts vel, NEEDS TO BE CHANGED!
+                # d_error = 0
+                # v_error = v_set - self.vel
+                a = self.pid.update(self.distance_to_nearest_car, self.distance_to_nearest_car, v_set, self.vel)
+            elif self.lead_veh_vel > v_set: #TODO: THIS IS TEMP, g.car_max_speed is target velocity which im assuming is the cars in fronts vel, NEEDS TO BE CHANGED!
                 # d_error = d_ideal - d_actual
                 # v_error = g.car_max_speed - self.vel
-                a = self.pid.update(d_ideal, self.distance_to_nearest_car, 0, self.vel)
+                a = self.pid.update(d_ideal, self.distance_to_nearest_car, self.lead_veh_vel, self.vel)
             else:
                 # d_error = d_ideal - d_actual
                 # v_error = g.car_max_speed - self.vel 
-                a = self.pid.update(d_ideal, self.distance_to_nearest_car, 0, self.vel)
+                a = self.pid.update(d_ideal, self.distance_to_nearest_car, self.lead_veh_vel, self.vel)
 
             
             self.accel_move(curr_time, a)
@@ -263,8 +272,11 @@ class Car:
 
     def accel_move(self, curr_time, a):
         self.vel = self.vel + a*(curr_time - self.time)
-        if self.vel > g.car_max_speed:
-            self.vel = g.car_max_speed
+        
+        # if self.vel > g.car_max_speed:
+        #     self.vel = g.car_max_speed
+        if self.vel > self.vel_max:
+            self.vel = self.vel_max
         elif self.vel < 0:
             self.vel = 0
         self.vel_move(curr_time)

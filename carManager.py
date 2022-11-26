@@ -115,10 +115,7 @@ class Lane:
                     if dis < 25 and self.TL.get_state() == TL_Event.YELLOW:
                         self.cars[self.start_ptr].update_distances(None)
                     else: 
-                        self.cars[self.start_ptr].update_distances(dis)
-
-        
-
+                        self.cars[self.start_ptr].update_distances(dis)            
             
         
         # if self.identifier == 3:
@@ -160,7 +157,7 @@ class Lane:
                     else:
                         # the car is behind the stop line and the light is red/yellow
                         dis_to_light =  self.cars[idx].lane_pos - self.stop_line_pos
-                        if dis_to_light < 25 and self.TL.get_state() == TL_Event.YELLOW:
+                        if self.TL.get_state() == TL_Event.YELLOW and dis_to_light < g.car_dis_thres_yellow and self.cars[idx].vel > g.car_dis_thres_yellow:
                             dis_to_light = dis_to_car
                 else: 
                     if self.cars[idx].lane_pos > self.stop_line_pos:
@@ -179,22 +176,27 @@ class Lane:
             self.cars[idx].update_distances(min(dis_to_car, dis_to_light))
         
 
-        # if self.identifier == 2:
-        #     if self.TL.get_state() != self.TL_state_prev:
-        #         thing = ""
-        #         if self.TL.get_state() == TL_Event.GREEN:
-        #             thing = "green"
-        #         elif self.TL.get_state() == TL_Event.RED:
-        #             thing = "red"
-        #         elif self.TL.get_state() == TL_Event.YELLOW:
-        #             thing = "yellow"
-        #         print(f"state change detected, now its {thing}")
+        if self.identifier == 3:
+            if self.TL.get_state() != self.TL_state_prev:
+                thing = ""
+                if self.TL.get_state() == TL_Event.GREEN:
+                    thing = "green"
+                elif self.TL.get_state() == TL_Event.RED:
+                    thing = "red"
+                elif self.TL.get_state() == TL_Event.YELLOW:
+                    thing = "yellow"
+                print(f"state change detected, now its {thing}")
             # print(f'lead cars dis: {self.cars[self.start_ptr].distance_to_nearest_car} ptr = {self.start_ptr}' )
             # print(f'lead car {self.cars[self.start_ptr].distance_to_nearest_car}, lead car pos {self.cars[self.start_ptr].lane_pos} ,following car {self.cars[self.start_ptr+1].distance_to_nearest_car} and ptr {self.start_ptr} 2nd car pos {self.cars[self.start_ptr+1].lane_pos}')
-            # print(f'3rd car {self.cars[2].distance_to_nearest_car}, lead car pos {self.cars[2].lane_pos} vel {self.cars[2].vel}, stop line pos: {self.stop_line_pos}')
+            # print(f'4th car dis {self.cars[4].distance_to_nearest_car}, lane pos {self.cars[4].lane_pos} vel {self.cars[4].vel}, stop line pos: {self.stop_line_pos} lead_veh_vel{self.cars[4].lead_veh_vel}')
             # print(f' 3rd car {self.cars[2].distance_to_nearest_car}')  
 
         self.TL_state_prev = self.TL.get_state()
+
+    def update_lead_veh_vel(self):
+        for i in range(1, self.cars_on_road):
+            idx = (self.start_ptr + i) % self.max_cars
+            self.cars[idx].set_lead_vehicle_pos(self.cars[(idx-1) % self.max_cars].vel)
 
     def set_TL_reference(self, TL : TrafficLight):
         self.TL = TL
@@ -252,6 +254,7 @@ class CarManager:
             # Check the furthest along car to see where it is
             lane.check_bounds()
             lane.update_closest_distance()
+            lane.update_lead_veh_vel()
 
             # Run all the car state machines
             for car in lane.cars:
@@ -287,7 +290,16 @@ class CarManager:
         
         # use manually generated entries
         if not use_random:
-            pass
+            Event(increment(10), EventType.C_EVENT, C_Event.ADD_CAR, lane = 3)
+            Event(increment(15), EventType.C_EVENT, C_Event.ADD_CAR, lane = 3)
+            Event(increment(20), EventType.C_EVENT, C_Event.ADD_CAR, lane = 3)
+            Event(increment(10), EventType.C_EVENT, C_Event.ADD_CAR, lane = 3)
+            Event(increment(10), EventType.C_EVENT, C_Event.ADD_CAR, lane = 3)
+            Event(increment(20), EventType.C_EVENT, C_Event.ADD_CAR, lane = 3)
+            Event(increment(20), EventType.C_EVENT, C_Event.ADD_CAR, lane = 3)
+            Event(increment(15), EventType.C_EVENT, C_Event.ADD_CAR, lane = 3)
+            Event(increment(10), EventType.C_EVENT, C_Event.ADD_CAR, lane = 3)
+            Event(increment(10), EventType.C_EVENT, C_Event.ADD_CAR, lane = 3)
         else:
             for i in range(0,8):
                 time = 0

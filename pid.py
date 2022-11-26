@@ -9,7 +9,7 @@ class PID_Modified:
         self.kd = kd
 
         # low pass filt
-        self.tau = 5
+        self.tau = 3
         # print("tau is zero here")
 
         # output and output limits

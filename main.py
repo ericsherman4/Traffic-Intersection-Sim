@@ -18,7 +18,7 @@ def sim_main():
     scene.center = vector(-0.62705, -8.96404, 4.50215)
     scene.range = 46.668804816827986
 
-    distant_light(direction=vector(0.4,1,0.7), color=color.gray(0.22))
+    distant_light(direction=vector(0.4,1,0.7), color=color.gray(0.17))
     # scene.lights = []
     scene.ambient = color.gray(0.2)
 
@@ -56,6 +56,10 @@ def sim_main():
     # variables for handling events in the sim loop
     next_event = None
     executed_event = True
+
+    print("make sure to fix max vel they are not random")
+    print("ADD A THING WHERE THE RUN YELLOW IS BASED ON DISTANCE TO LIGHT AND ALSO THE SPEED!")
+    print("add dynamic v_set setting? ")
 
     while(t < total_time):
 

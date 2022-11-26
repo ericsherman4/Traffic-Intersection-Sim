@@ -2,7 +2,7 @@ from vpython import color, vector
 
 class g:
     #env
-    size = 800
+    size = 600
     roadwidth = 40
     yellow_line_width = 1
     yellow_line_spacing_c2c = 2 #c2c = center to center
@@ -39,13 +39,16 @@ class g:
     # on should add jerk and also each car should have a different acceleration profiles
     car_accel = 1
     car_max_speed = 8
+    car_min_speed = 4
     car_starting_vel = 2
-    car_max_decel = 2
-    car_max_accel = 1
+    car_max_decel = 5
+    car_max_accel = 5
+    car_dis_thres_yellow = 20
+    car_vel_thres_yellow = 6
 
     # car manager
-    max_cars = 6
-    max_cars_on_road = 5
+    max_cars = 7
+    max_cars_on_road = 6
 
 class gtime:
     delta_t = 0.1
