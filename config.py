@@ -19,37 +19,34 @@ class g:
     show_tl_labels = False
 
     # traffic light timing (ms)
-    time_green = 20
-    #time_red = time_green # this is no longer used by the new implementation
+    time_green = 30
     time_yellow = 8
-    time_red_overlap = 5 
+    time_red_overlap = 7
 
     # car
     car_width = 8
     car_length = 18
     car_length_div2 = car_length/2
     car_height = 8
-    car_colors= [color.red, color.yellow, color.green, 
-                color.orange, color.white, 
-                color.cyan, color.magenta,
-                vector(1,0.7,0.2)]
+    car_colors = [color.gray(0.2), color.gray(0.4), color.gray(0.6), color.blue, color.red, 
+                  vector(101,67,33), color.green, color.orange, vector(207,185,151), vector(225,198,153), 
+                  color.purple, vector(255,215,0), color.yellow, color.cyan, color.magenta, vector(1,0.7,0.2)]
 
-    # car personality
-    # for now, we will do all cars have constant velocity but think later 
-    # on should add jerk and also each car should have a different acceleration profiles
-    car_accel = 1
+    # car Personality
     car_max_speed = 8
     car_min_speed = 4
-    car_starting_vel = 2
+    car_starting_vel_max = car_max_speed
     car_max_decel = 5
     car_max_accel = 5
     car_dis_thres_yellow = 20
     car_vel_thres_yellow = 6
 
-    # car manager
-    max_cars = 7
-    max_cars_on_road = 6
+    # Car manager
+    max_cars = 6
+    max_cars_on_road = 5
 
 class gtime:
     delta_t = 0.1
+    total_time = 400
+    sim_rate = 55
 

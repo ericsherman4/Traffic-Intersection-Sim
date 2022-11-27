@@ -91,6 +91,14 @@ class PID_Modified:
 
         return self.out
 
+    def reset(self):
+        self.integrator = 0
+        self.differen= 0
+        self.prev_verror = 0
+        self.prev_vmeas = 0
+        self.prev_derror = 0
+        self.prev_dmeas = 0
+
 ################# 
 ### UNUSED
 #################

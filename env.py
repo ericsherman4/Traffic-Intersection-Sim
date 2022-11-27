@@ -93,20 +93,6 @@ class Env:
                                     -stop_line_position,
                                     -stop_line_position]
 
-        # self.stop_line_position =   [vector(-stop_line_position,0,pos_z[0]),
-        #                             vector(-stop_line_position,0,pos_z[1]),
-        #                             vector(stop_line_position,0,pos_z[2]),
-        #                             vector(stop_line_position,0,pos_z[3]),
-        #                             vector(pos_z[0],0,stop_line_position),
-        #                             vector(pos_z[1],0,stop_line_position),
-        #                             vector(pos_z[2],0,-stop_line_position),
-        #                             vector(pos_z[3],0,-stop_line_position)]
-
-        # for each in self.stop_line_position:
-            # box(pos=each, height = 20)
-
-
-
 class Axes:
     def __init__(self):
         length = g.size/2+50
