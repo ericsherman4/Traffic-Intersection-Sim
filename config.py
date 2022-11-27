@@ -48,5 +48,5 @@ class g:
 class gtime:
     delta_t = 0.1
     total_time = 400
-    sim_rate = 55
+    sim_rate = 40
 

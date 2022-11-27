@@ -89,7 +89,7 @@ class Simulation:
 
         # Capture end time and perform loop analysis
         self.loop_end_time = perf_counter()
-        if self.cycles % 5 == 0:
+        if self.cycles % 15 == 0:
             self.completion_time_ms = round((self.loop_end_time - self.loop_start_time)*1000,2)
             self.performance_label.text = str(f"Computation time: {self.completion_time_ms}ms")
 

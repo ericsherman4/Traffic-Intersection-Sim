@@ -30,23 +30,25 @@ class TrafficLightManager:
 
     def generate_events(self, total_duration):
 
-        # start it off
-        self.event_target_all_TL(0, TL_Event.RED)
+        time = 0
 
-        time = g.time_red_overlap
+        def increment_postfix(val):
+            nonlocal time
+            temp = time
+            time += val
+            return temp
+
+        # start it off
+        self.event_target_all_TL(time, TL_Event.RED)
+
+        increment_postfix(g.time_red_overlap)
         while time < total_duration:
-            self.event_target_even_TL(time, TL_Event.GREEN)
-            time += g.time_green
-            self.event_target_even_TL(time, TL_Event.YELLOW)
-            time += g.time_yellow
-            self.event_target_even_TL(time, TL_Event.RED)
-            time += g.time_red_overlap
-            self.event_target_odd_TL(time, TL_Event.GREEN)
-            time += g.time_green
-            self.event_target_odd_TL(time, TL_Event.YELLOW)
-            time += g.time_yellow
-            self.event_target_odd_TL(time, TL_Event.RED)
-            time += g.time_red_overlap
+            self.event_target_even_TL(increment_postfix(g.time_green), TL_Event.GREEN)
+            self.event_target_even_TL(increment_postfix(g.time_yellow), TL_Event.YELLOW)
+            self.event_target_even_TL(increment_postfix(g.time_red_overlap), TL_Event.RED)
+            self.event_target_odd_TL(increment_postfix(g.time_green), TL_Event.GREEN)
+            self.event_target_odd_TL(increment_postfix(g.time_yellow), TL_Event.YELLOW)
+            self.event_target_odd_TL(increment_postfix(g.time_red_overlap), TL_Event.RED)
 
     def event_target_all_TL(self, curr_time, action):
         for i in range(0,4):
