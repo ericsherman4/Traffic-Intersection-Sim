@@ -78,16 +78,16 @@ class CarManager:
         
         # If use_random is False, use manually generated events, otherwise, use random.
         if not use_random:
-            Event(increment_prefix(10), EventType.C_EVENT, C_Event.ADD_CAR, lane = 3)
-            Event(increment_prefix(15), EventType.C_EVENT, C_Event.ADD_CAR, lane = 3)
-            Event(increment_prefix(20), EventType.C_EVENT, C_Event.ADD_CAR, lane = 3)
-            Event(increment_prefix(10), EventType.C_EVENT, C_Event.ADD_CAR, lane = 3)
-            Event(increment_prefix(10), EventType.C_EVENT, C_Event.ADD_CAR, lane = 3)
-            Event(increment_prefix(20), EventType.C_EVENT, C_Event.ADD_CAR, lane = 3)
-            Event(increment_prefix(20), EventType.C_EVENT, C_Event.ADD_CAR, lane = 3)
-            Event(increment_prefix(15), EventType.C_EVENT, C_Event.ADD_CAR, lane = 3)
-            Event(increment_prefix(10), EventType.C_EVENT, C_Event.ADD_CAR, lane = 3)
-            Event(increment_prefix(10), EventType.C_EVENT, C_Event.ADD_CAR, lane = 3)
+            Event(increment_prefix(10), EventType.C_EVENT, C_Event.ADD_CAR, lane = 0)
+            Event(increment_prefix(15), EventType.C_EVENT, C_Event.ADD_CAR, lane = 0)
+            Event(increment_prefix(20), EventType.C_EVENT, C_Event.ADD_CAR, lane = 0)
+            Event(increment_prefix(10), EventType.C_EVENT, C_Event.ADD_CAR, lane = 0)
+            Event(increment_prefix(10), EventType.C_EVENT, C_Event.ADD_CAR, lane = 0)
+            Event(increment_prefix(20), EventType.C_EVENT, C_Event.ADD_CAR, lane = 0)
+            Event(increment_prefix(20), EventType.C_EVENT, C_Event.ADD_CAR, lane = 0)
+            Event(increment_prefix(15), EventType.C_EVENT, C_Event.ADD_CAR, lane = 0)
+            Event(increment_prefix(10), EventType.C_EVENT, C_Event.ADD_CAR, lane = 0)
+            Event(increment_prefix(10), EventType.C_EVENT, C_Event.ADD_CAR, lane = 0)
         else:
             # Generate for each lane one at a time.
             for i in range(0,self.num_lanes):

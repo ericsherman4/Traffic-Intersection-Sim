@@ -17,6 +17,7 @@ class Env:
         stop_line_center = g.roadwidth/2
         stop_line_length = g.roadwidth
         stop_line_position = stop_line_center+g.white_line_width/2+adj*2
+        print(f"stop line pos = {stop_line_position}")
         white_lane_start = (g.roadwidth/2 + adj*2) + g.dashed_line_length/2
         white_lane_end = g.size/2
 

@@ -3,6 +3,7 @@ from config import g, gtime
 from carManager import CarManager
 from trafficlightManager import TrafficLightManager
 from event import Event, EventType
+from env import Axes
 from vpython import canvas, vector, distant_light, color, label
 
 
@@ -23,6 +24,10 @@ class Simulation:
         self.scene.ambient = color.gray(0.2)
         # scene.lights = []
 
+        # Draw the coordinate axes
+        if g.generate_axes:
+            Axes()
+
         self.sim_label = label(pos=vector(0,100,0), text="GENERATING CAR OBJECTS")
         self.performance_label = label(pos=vector(-100,2,100), text="WAITING FOR CLOCK")
 
@@ -37,7 +42,7 @@ class Simulation:
 
         # Give car manager awareness of traffic light states
         self.cmgr.set_TL_references(self.lmgr.get_TL_references())
-        self.cmgr.generate_events(True)
+        self.cmgr.generate_events(g.generate_cars_w_random)
 
         # Create variables for handling events in the simulation loop
         self.next_event = None

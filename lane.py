@@ -35,7 +35,7 @@ class Lane:
 
         # Generate all cars, set all to invisible
         for i in range(0,self.max_cars):
-            self.cars[i] = Car(self.lane_start, car_rot_deg, visible=False)
+            self.cars[i] = Car(self.lane_start, car_rot_deg, self.identifier, False)
 
         # Give lane awareness fo the traffic light
         self.TL = None
@@ -159,6 +159,11 @@ class Lane:
 
             # Update the cars nearest distance by taking min of dis_to_car and dis_to_light
             self.cars[idx].update_distances(min(dis_to_car, dis_to_light))
+
+        # TEMP
+        if self.identifier == 0:
+            if self.cars[self.start_ptr].lane_pos >= self.stop_line_pos:
+                self.cars[self.start_ptr].pending_right_turn = True
         
         # Debug 
         # self.debug()

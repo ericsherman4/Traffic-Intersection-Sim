@@ -1,7 +1,7 @@
 from vpython import vector,box, arrow, color, compound, rotate,sleep, local_light
 from config import g,gtime
 import random
-from math import pi
+from math import pi,sqrt
 from pid import PID,PID_Modified
 
 
@@ -22,7 +22,7 @@ class C_States:
 
 class Car:
     
-    def __init__(self, pos :vector, rot_deg, visible):
+    def __init__(self, pos :vector, rot_deg, lane, visible):
 
         random.seed()
         
@@ -51,6 +51,8 @@ class Car:
         self.lead_veh_vel = 0
         self.time = 0
         self.lane_pos = None
+        self.turn_radius = 13
+        print("setting turn radius to something")
 
         # variables for holding the lane direction
         # this is so the car knows what direction to move based on its spawn orientation
@@ -70,12 +72,21 @@ class Car:
         self.vehicle.visible = visible
         for obj in self.objects_to_update:
             obj.visible = visible
-
         self.distance_to_nearest_obj = None
+        self.pending_right_turn = False
+        self.pending_left_turn = False
+        self.lane_identifer = lane
 
         # setup the PID
         self.pid = PID_Modified(1.1,0.3,2, gtime.delta_t)
         self.pid.set_limits(-random.uniform(1, g.car_max_decel), random.uniform(0.5, g.car_max_accel))
+
+        # TEMP
+        self.x = 0
+        self.y = 0
+        self.abs_ang = 0
+        self.rel_ang = 0
+
 
 
     # based on the spawn orientation, determine the the direction that the car is facing.
@@ -99,6 +110,9 @@ class Car:
     # set to zero if there is no car in front.
     def set_lead_vehicle_pos(self, val):
         self.lead_veh_vel = val
+
+    def set_turn_radius(self,val):
+        self.turn_radius = val
 
     # reset the car
     def reset(self, pos):
@@ -156,6 +170,12 @@ class Car:
             if not self.vehicle.visible:
                 self.nx_state = C_States.DESPAWNING
                 return
+            elif self.pending_left_turn:
+                # the flag will get set by the lane
+                self.nx_state = C_States.TURN_LEFT
+            elif self.pending_right_turn:
+                self.nx_state = C_States.TURN_RIGHT
+
 
             # determine ideal distances and target velocities
             t_ideal = 1.5
@@ -186,14 +206,80 @@ class Car:
                 # v_error = g.car_max_speed - self.vel 
                 self.a = self.pid.update(d_ideal, self.distance_to_nearest_obj, self.lead_veh_vel, self.vel)
 
-            
+
             self.accel_move(curr_time)
+
+        elif self.pr_state == C_States.TURN_RIGHT:
+            # somehow need a way to know when we are done turing
+            # y = sqrt(r - (x-h)^2) + k
+            # y will be whatever direction is straight? 
+            # x will be whatever direction turn is 
+
+            # the center pos is constant, its the intersection of the two stop lines.
+            
+            # generate a general path with with 0,0 as the center
+
+            self.x += 0.5 #TODO: might want to put at end since it never runs with self.x = 0
+            # self.x_minus -= 0.5
+            if self.x < self.turn_radius:
+                self.y = sqrt(self.turn_radius**2 - self.x**2)
+                # self.y_minus = sqrt(self.turn_radius**2 - self.x_minus**2)
+            # arrow(pos = vector(self.x, 0, self.y), axis = vector(0,20,0), color= color.red)
+            # arrow(pos = vector(self.x_minus, 0, self.y_minus), axis = vector(0,20,0))
+            # arrow(pos = vector(self.x, 0, -self.y), axis = vector(0,20,0), color =color.yellow)
+            # arrow(pos = vector(-self.x, 0, self.y), axis = vector(0,20,0), color = color.green)
+            # arrow(pos = vector(-self.x, 0, -self.y), axis = vector(0,20,0), color = color.orange)
+            # bob = arrow(pos = vector(self.x,10,-self.y), axis = vector(8,0,0), color = color.white)
+            
+            ang = 0
+            if self.x < self.turn_radius:
+                ang = self.x / sqrt(self.turn_radius**2 - self.x**2)
+                if ang  > pi/2:
+                    ang = pi/2
+                    self.pending_right_turn = False
+                    self.nx_state = C_States.STOPPED
+
+        
+            # bob.rotate(angle = -ang, axis = vector(0,1,0), origin = vector(self.x, bob.pos.y, -self.y))
+
+            
+
+            self.vehicle.pos.x = self.x - 28
+            self.vehicle.pos.z = -self.y + 28
+            
+            self.rel_ang = -(ang - self.abs_ang)
+
+            self.vehicle.rotate(angle = self.rel_ang, axis = vector(0,1,0), origin = self.vehicle.pos)
+
+            self.abs_ang = ang
+
+            print(f'abs: {self.abs_ang} rel: {self.rel_ang}')
+
+
+
+            
+
+
+            # self.vehicle.make_trail = True
+            # # calling z y
+            # center = [-28,28]    
+            # arrow(pos = vector(center[0], 0, center[1]), axis = vector(0,20,0))
+
+            # self.vehicle.pos.x = self.vehicle.pos.x - 0.5*(curr_time - self.time)
+            # self.vehicle.pos.z = sqrt(self.turn_radius**2 - (self.vehicle.pos.x - center[0])**2) + center[1]
+            # temp_calc = self.vehicle.pos.x - center[0]
+            # deg_to_rotate = (temp_calc) / sqrt(self.turn_radius**2 - (temp_calc**2))
+            # self.vehicle.rotate(angle=deg_to_rotate/180*pi, axis =  vector(0,1,0), origin =  self.vehicle.pos)
+
             
 
         elif self.pr_state == C_States.DESPAWNING:
             # dont know if anything is needed here
             # might get rid of this state
             self.nx_state = C_States.WAITING
+
+        elif self.pr_state == C_States.STOPPED:
+            pass
         
         # End car state machine
 

@@ -9,7 +9,8 @@ class g:
     white_line_width = 1.5
     dashed_line_length= 7
     animate_loading = False
-    generate_lane_identifiers = False
+    generate_lane_identifiers = True
+    generate_axes = True
 
     #traffic light
     tl_height = 10
@@ -19,7 +20,8 @@ class g:
     show_tl_labels = False
 
     # traffic light timing (ms)
-    time_green = 30
+    time_green = 15
+    print("TIME GREEN WAS CHANGED!!!!")
     time_yellow = 8
     time_red_overlap = 7
 
@@ -44,6 +46,7 @@ class g:
     # Car manager
     max_cars = 6
     max_cars_on_road = 5
+    generate_cars_w_random = False
 
 class gtime:
     delta_t = 0.1

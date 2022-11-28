@@ -17,9 +17,7 @@ class TrafficLightManager:
                      vector(-temp_pos/2,30,-temp_pos),
                      vector(-temp_pos,30,temp_pos/2),
                      vector(temp_pos/2,30,temp_pos)]
-    
-
-
+                     
         for i in range(0,4):
             self.lights[i] = TrafficLight(positions[i],90*i)
             if g.show_tl_labels:
