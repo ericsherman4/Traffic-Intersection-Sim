@@ -1,7 +1,7 @@
 import random
-from car import Car
+from car import Car, C_States
 import numpy as np
-from event import TL_Event
+from event import TL_Event, C_Event
 import copy
 from trafficlight import TrafficLight
 from config import g
@@ -41,13 +41,18 @@ class Lane:
         self.TL = None
         self.TL_state_prev = None   # used for debugging!
 
+        # Events
+        self.turn_event_trigger = False
+        self.turn_event_dir = None
+        self.turn_event_car_idx = None
+
     def get_car_count(self):
         return self.cars_on_road
 
     def lane_full(self):
         return self.cars_on_road == self.max_cars_on_road
 
-    def is_empty(self):
+    def lane_empty(self):
         return self.cars_on_road == 0
 
     # Put a car on a road (activates from back (end_ptr))
@@ -65,29 +70,96 @@ class Lane:
         self.start_ptr = (self.start_ptr + 1) % self.max_cars 
 
     # Insert a car into the lane (for when cars turn into the lane)
+    # 0 indexing for idx
     def insert(self, idx, car : Car):
-        # idx is defined as the index of the current cars on the road (zero-indexed)
+        
+        print(f" id of old car: {id(car)} ")
+        if self.lane_full():
+            print("NO ROOM TO ADD CAR!")
+            return False
         # 0th car is the one that is furthest along in the lane 
-        actual_idx = (self.start_ptr + idx) % self.max_cars
-        if actual_idx > self.end_ptr:
+        if idx <0 or idx > (g.max_cars-1):
             print("INVALID INDEX")
-            return
-        end = abs((actual_idx - self.end_ptr))
-        for i in range(actual_idx, actual_idx + end):
-            # i is just for how many times it runs, do not use for direct indexing.
-            idx = self.end_ptr - ((actual_idx + i) % self.max_cars)
-            temp = self.cars[idx + 1]
-            self.cars[idx] = temp
-        self.cars[actual_idx] = copy.deepcopy(car)
+            return False
+        print(f"idx before for loop value: {idx}")
+        print(f"self.end_ptr = {self.end_ptr} and abs and diff is {abs(idx - self.end_ptr)}")
+        for i in range(idx, abs(idx - self.end_ptr)):
+            print(f"idx = {idx}")
+            temp = self.cars[i % self.max_cars]
+            self.cars[(i+1) % self.max_cars] = copy.deepcopy(temp)
+        print(f"pos of passed in car {car.vehicle.pos}")
+        self.cars[idx] = copy.deepcopy(car) # this should run
+        self.cars[idx].vehicle = car.vehicle.clone()
+        print(f"pos after deepcopy {self.cars[idx].vehicle.pos}")
+        print(f"new id: {id(self.cars[idx])}" )
+        self.end_ptr = (self.end_ptr + 1) % self.max_cars
+        self.cars_on_road +=1
+        print(f"new car visible? {self.cars[idx].vehicle.visible}")
+
+        # insert always takes car from another lane, so need to modify the car object
+        # determine what the rot degree is based on where it came from.
+        print(f"check if og car, rotation = {self.cars[idx].rotation}")
+        print(f"pos before {self.cars[idx].vehicle.pos}")
+        og_rot_deg = self.cars[idx].rotation
+        if self.cars[idx].pending_right_turn:
+            self.cars[idx].set_direction_flags(og_rot_deg - 90)
+        elif self.cars[idx].pending_left_turn:
+            self.cars[idx].set_direction_flags(og_rot_deg + 90)
+
+        print(f"check if og car, rotation = {self.cars[idx].rotation}")
+
+        print(self.cars[idx].xaxis_plus)
+        print(self.cars[idx].zaxis_plus)
+        print(self.cars[idx].xaxis_minus)
+        print(self.cars[idx].zaxis_minus)
+        print(f'present state: {self.cars[idx].pr_state}')
+        print(f'present state: {self.cars[idx].nx_state}')
+
+
+        self.cars[idx].lane_identifer = self.identifier
+
+        return True
+
+    def remove(self, idx):
+        if self.lane_empty():
+            print("NOTHING TO REMOVE LANE EMPTY")
+            return False
+        if idx <0 or idx > (g.max_cars-1):
+            print("INVALID INDEX")
+            return False
+        
+        # for the car thats being removed, reset it 
+        self.cars[idx].reset(self.lane_start)
+        self.cars[idx].invisible()
+        
+        for i in range(idx, abs(idx - self.end_ptr)):
+            self.cars[i % self.max_cars] = copy.deepcopy(self.cars[(i+1) % self.max_cars])
+        
+        self.end_ptr = (self.end_ptr - 1) % self.max_cars
+        if self.end_ptr < 0:
+            self.end_ptr = self.max_cars-1
+        self.cars_on_road -=1
+
+        return True
 
     # Check to see if the car is still within the lane
     def check_bounds(self):
         if abs(self.cars[self.start_ptr].lane_pos) > g.size*0.5:
             self.deactivate() # this always pops the furthest along car
 
+    # Handle turning event
+    def handle_turn_event(self, idx, action : C_Event):
+        actual_idx = (self.start_ptr + idx) % self.max_cars
+        if action == C_Event.TURN_RIGHT:
+            self.cars[actual_idx].pending_right_turn = True
+        elif action == C_Event.TURN_LEFT:
+            self.cars[actual_idx].pending_left_turn = True
+        else:
+            print(f"ERROR: TURN EVENT HANDLER GIVEN OTHER ACTION THAN TURNING, {action}")
+
     def update_closest_distance(self):
 
-        if self.is_empty():
+        if self.lane_empty():
             return 
 
         # Determine the closest distance based on whether its a car or the traffic light for the lead car
@@ -192,6 +264,46 @@ class Lane:
         for i in range(1, self.cars_on_road):
             idx = (self.start_ptr + i) % self.max_cars
             self.cars[idx].set_lead_vehicle_pos(self.cars[(idx-1) % self.max_cars].vel)
+
+    def check_for_turn_events(self):
+        inverted = self.identifier < 6 and self.identifier > 1
+        for i in range(0, self.cars_on_road):
+            idx = (self.start_ptr + i) % self.max_cars
+            if (inverted and self.cars[idx].lane_pos <= self.stop_line_pos) \
+                    or (not inverted and self.cars[idx].lane_pos >= self.stop_line_pos ):
+                if not self.cars[idx].execute_event_now:
+                    if self.cars[idx].pending_right_turn:
+                        self.turn_event_trigger = True
+                        self.turn_event_dir = C_Event.TURN_RIGHT
+                        self.turn_event_car_idx = idx
+                        self.cars[idx].execute_event_now = True
+                        print("code ran in check for turn events. setting trigger to true")
+                        print(id(self.cars[idx]))
+                    elif self.cars[idx].pending_left_turn:
+                        self.turn_event_trigger = True
+                        self.turn_event_dir = C_Event.TURN_LEFT
+                        self.turn_event_car_idx = idx
+                        self.cars[idx].execute_event_now = True
+                        print("code ran 2")
+
+    def get_idx_to_insert(self):
+
+        if self.lane_empty():
+            return self.start_ptr
+
+        print(f"num cars in lane {self.cars_on_road}")
+
+        inverted = self.identifier < 6 and self.identifier > 1
+        print(f' inverted: {inverted}')
+        for i in range(0, self.cars_on_road):
+            idx = (self.start_ptr + i) % self.max_cars
+            if inverted and self.cars[idx].lane_pos > self.stop_line_pos:
+                return idx
+            elif (not inverted) and self.cars[idx].lane_pos < self.stop_line_pos:
+                return idx
+        print("each end of func get_idx_to_insert")
+        return None
+            
 
     # Store a reference to the traffic light so the Lane can view its state
     def set_TL_reference(self, TL : TrafficLight):

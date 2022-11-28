@@ -7,7 +7,7 @@ class EventType:
     TL_EVENT, C_EVENT = range(2)
 
 class C_Event:
-    ADD_CAR = range(1)
+    ADD_CAR, TURN_RIGHT, TURN_LEFT = range(3)
 
 class TL_Event:
     RED, GREEN, YELLOW, HALTED = range(4)

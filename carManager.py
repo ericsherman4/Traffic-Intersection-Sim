@@ -29,6 +29,9 @@ class CarManager:
                                  self.env.stop_line_position[i],
                                  self.car_rot[i])
 
+        self.turn_right_map = {0:7, 4:0, 3:4, 7:3}
+        self.turn_left_map = {1:5, 5:2, 2:6, 6:1}
+
 
     # Run the car manager state machine.
     def run(self, curr_time):
@@ -39,6 +42,41 @@ class CarManager:
             lane.check_bounds()                 # Check location of lane lead car
             lane.update_closest_distance()      # Update nearest obstacle for every car
             lane.update_lead_veh_vel()          # Update lead car vel for all cars
+            lane.check_for_turn_events()        # Check for when a car needs to turn
+
+            result = False
+
+            for i in range (0, self.num_lanes):
+
+                if self.lanes[i].turn_event_trigger:
+                    self.lanes[i].turn_event_trigger = False
+
+                    print(f"TRIGGER BY LANE {i}")
+
+                    # i need the car to move and position where to insert it? 
+                    if self.lanes[i].turn_event_dir == C_Event.TURN_RIGHT:
+                        print(f"current lane: {i}")
+                        print(f" destination lane: {self.turn_right_map[i]}")
+                        idx = self.lanes[self.turn_right_map[i]].get_idx_to_insert()
+                        print(f"insertation index is : {idx}")
+                        car_idx_og_lane = self.lanes[i].turn_event_car_idx
+                        print(f"car_idx_og_lane is {car_idx_og_lane}")
+                        result = self.lanes[self.turn_right_map[i]].insert(idx, self.lanes[i].cars[car_idx_og_lane])
+                        if result:
+                            print("SUCCESSFULLY INSERTED")
+                            print(f"start_ptr {self.lanes[i].start_ptr} and end_ptr{self.lanes[i].end_ptr} and cars on road {self.lanes[i].cars_on_road}")
+                            result = self.lanes[i].remove(car_idx_og_lane)
+                            if result: 
+                                print("REMOVED SUCESSFULLY")
+                            else: 
+                                print("FAILED TO REMOVE")
+                        else:
+                            print("FAILED TO INSERT")
+                    elif self.lanes[i].turn_event_dir == C_Event.TURN_LEFT:
+                        print("not implemented yet!!!!!!!!!!!!!!!!!!!!!!!!!")
+
+            # if lane.identifier == 7:
+            #     print(self.lanes[7].cars[0].vehicle.pos)
 
             # Run all the car state machines
             for car in lane.cars:
@@ -79,17 +117,22 @@ class CarManager:
         # If use_random is False, use manually generated events, otherwise, use random.
         if not use_random:
             Event(increment_prefix(10), EventType.C_EVENT, C_Event.ADD_CAR, lane = 0)
-            Event(increment_prefix(15), EventType.C_EVENT, C_Event.ADD_CAR, lane = 0)
-            Event(increment_prefix(20), EventType.C_EVENT, C_Event.ADD_CAR, lane = 0)
-            Event(increment_prefix(10), EventType.C_EVENT, C_Event.ADD_CAR, lane = 0)
-            Event(increment_prefix(10), EventType.C_EVENT, C_Event.ADD_CAR, lane = 0)
-            Event(increment_prefix(20), EventType.C_EVENT, C_Event.ADD_CAR, lane = 0)
-            Event(increment_prefix(20), EventType.C_EVENT, C_Event.ADD_CAR, lane = 0)
-            Event(increment_prefix(15), EventType.C_EVENT, C_Event.ADD_CAR, lane = 0)
-            Event(increment_prefix(10), EventType.C_EVENT, C_Event.ADD_CAR, lane = 0)
-            Event(increment_prefix(10), EventType.C_EVENT, C_Event.ADD_CAR, lane = 0)
+            Event(time + 5, EventType.C_EVENT, C_Event.TURN_RIGHT, idx=0, lane = 0)
+            # Event(increment_prefix(15), EventType.C_EVENT, C_Event.ADD_CAR, lane = 0)
+            # Event(time + 5, EventType.C_EVENT, C_Event.TURN_RIGHT, idx=0, lane = 0)
+            # Event(increment_prefix(20), EventType.C_EVENT, C_Event.ADD_CAR, lane = 0)
+            # Event(increment_prefix(10), EventType.C_EVENT, C_Event.ADD_CAR, lane = 0)
+            # Event(increment_prefix(10), EventType.C_EVENT, C_Event.ADD_CAR, lane = 0)
+            # Event(increment_prefix(20), EventType.C_EVENT, C_Event.ADD_CAR, lane = 0)
+            # Event(increment_prefix(20), EventType.C_EVENT, C_Event.ADD_CAR, lane = 0)
+            # Event(increment_prefix(15), EventType.C_EVENT, C_Event.ADD_CAR, lane = 0)
+            # Event(increment_prefix(10), EventType.C_EVENT, C_Event.ADD_CAR, lane = 0)
+            # Event(increment_prefix(10), EventType.C_EVENT, C_Event.ADD_CAR, lane = 0)
         else:
             # Generate for each lane one at a time.
+
+            # TODO: generate probability of about 0.7 or 0.8 for NOT turning.
+
             for i in range(0,self.num_lanes):
                 time = 0
                 for j in range(0,15):
@@ -99,6 +142,17 @@ class CarManager:
     def handle_event(self, event : Event):
         if event.action == C_Event.ADD_CAR:
             self.add_car(event.lane)
+        elif event.action == C_Event.TURN_RIGHT or event.action == C_Event.TURN_LEFT:
+            self.handle_turn_event(event.lane, event.idx, event.action)
+
+    def handle_turn_event(self, lane, idx, action):
+        if idx == -1:
+            self.lanes[lane].handle_turn_event(random.randint(0, self.num_lanes-1), action)
+        elif idx >= 0 and idx < (self.num_lanes):
+            self.lanes[lane].handle_turn_event(idx, action)
+        else:
+            print("INVALID INDEX IN HANDLE_TURN_EVENT()")
+
 
 
     

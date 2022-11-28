@@ -23,7 +23,6 @@ class C_States:
 class Car:
     
     def __init__(self, pos :vector, rot_deg, lane, visible):
-
         random.seed()
         
         # The y position passed in pos vector is ignored and instead offset is used  
@@ -52,7 +51,6 @@ class Car:
         self.time = 0
         self.lane_pos = None
         self.turn_radius = 13
-        print("setting turn radius to something")
 
         # variables for holding the lane direction
         # this is so the car knows what direction to move based on its spawn orientation
@@ -62,7 +60,8 @@ class Car:
         self.zaxis_minus = False
 
         # determine vehicle direction and set lane_pos
-        self.set_direction_flags(rot_deg)
+        self.rotation = rot_deg
+        self.set_direction_flags(self.rotation)
 
         # initialize states
         self.pr_state = C_States.WAITING
@@ -75,6 +74,7 @@ class Car:
         self.distance_to_nearest_obj = None
         self.pending_right_turn = False
         self.pending_left_turn = False
+        self.execute_event_now = False
         self.lane_identifer = lane
 
         # setup the PID
@@ -92,19 +92,37 @@ class Car:
     # based on the spawn orientation, determine the the direction that the car is facing.
     # with the spawn direction known, initialize lane position
     def set_direction_flags(self, rot_deg):
+        if rot_deg == -90:
+            rot_deg = 270
+        elif rot_deg == 360:
+            rot_deg = 0
         # determine direction
         if rot_deg == 0:
             self.xaxis_plus = True
+            self.xaxis_minus = False
+            self.zaxis_plus = False
+            self.zaxis_minus = False
             self.lane_pos = self.vehicle.pos.x #- g.car_length_div2
         elif rot_deg == 180:
+            self.xaxis_plus = False
             self.xaxis_minus = True
+            self.zaxis_plus = False
+            self.zaxis_minus = False
             self.lane_pos = self.vehicle.pos.x #+ g.car_length_div2
         elif rot_deg == 270:
+            self.xaxis_plus = False
+            self.xaxis_minus = False
             self.zaxis_plus = True
+            self.zaxis_minus = False
             self.lane_pos = self.vehicle.pos.z #- g.car_length_div2
         elif rot_deg == 90:
+            self.xaxis_plus = False
+            self.xaxis_minus = False
+            self.zaxis_plus = False
             self.zaxis_minus = True
             self.lane_pos = self.vehicle.pos.z #+ g.car_length_div2
+        
+        self.rotation = rot_deg
 
     # update the position of the car in front if there is one
     # set to zero if there is no car in front.
@@ -131,6 +149,15 @@ class Car:
 
         # reset the error pointer
         self.error_arrow.visible = False
+
+        # reset all the flags
+        self.pending_right_turn = False
+        self.pending_left_turn = False
+        self.execute_event_now = False
+
+        # reset the state machine
+        self.pr_state = C_States.WAITING
+        self.nx_state = C_States.WAITING
 
     # set the car and other objects to be visible
     def visible(self):
@@ -162,19 +189,25 @@ class Car:
         # Car State Machine
         # WAITING, ACCEL, DECEL, STOPPED, CONSTANT_VEL, YIELDING, TURN_LEFT, TURN_RIGHT = range(8)
         if self.pr_state == C_States.WAITING:
+
+            # Determine next state
             if self.vehicle.visible:
+                print("leaving waiting state going to accel")
                 self.nx_state = C_States.ACCEL
 
         elif self.pr_state == C_States.ACCEL:
 
+            # Determine next state
             if not self.vehicle.visible:
                 self.nx_state = C_States.DESPAWNING
                 return
-            elif self.pending_left_turn:
-                # the flag will get set by the lane
+            elif self.pending_left_turn and self.execute_event_now:
                 self.nx_state = C_States.TURN_LEFT
-            elif self.pending_right_turn:
+                # self.execute_event_now = False # Lane needs to control this because car doesnt have access to the env variables it needs to be able to determine this otherwise
+            elif self.pending_right_turn and self.execute_event_now:
                 self.nx_state = C_States.TURN_RIGHT
+                print("leaving accel state")
+                # self.execute_event_now = False
 
 
             # determine ideal distances and target velocities
@@ -210,6 +243,7 @@ class Car:
             self.accel_move(curr_time)
 
         elif self.pr_state == C_States.TURN_RIGHT:
+
             # somehow need a way to know when we are done turing
             # y = sqrt(r - (x-h)^2) + k
             # y will be whatever direction is straight? 
@@ -220,24 +254,23 @@ class Car:
             # generate a general path with with 0,0 as the center
 
             self.x += 0.5 #TODO: might want to put at end since it never runs with self.x = 0
-            # self.x_minus -= 0.5
             if self.x < self.turn_radius:
                 self.y = sqrt(self.turn_radius**2 - self.x**2)
-                # self.y_minus = sqrt(self.turn_radius**2 - self.x_minus**2)
             # arrow(pos = vector(self.x, 0, self.y), axis = vector(0,20,0), color= color.red)
             # arrow(pos = vector(self.x_minus, 0, self.y_minus), axis = vector(0,20,0))
             # arrow(pos = vector(self.x, 0, -self.y), axis = vector(0,20,0), color =color.yellow)
             # arrow(pos = vector(-self.x, 0, self.y), axis = vector(0,20,0), color = color.green)
             # arrow(pos = vector(-self.x, 0, -self.y), axis = vector(0,20,0), color = color.orange)
             # bob = arrow(pos = vector(self.x,10,-self.y), axis = vector(8,0,0), color = color.white)
-            
+            complete = False
             ang = 0
             if self.x < self.turn_radius:
                 ang = self.x / sqrt(self.turn_radius**2 - self.x**2)
                 if ang  > pi/2:
                     ang = pi/2
-                    self.pending_right_turn = False
-                    self.nx_state = C_States.STOPPED
+                    complete = True
+                    
+
 
         
             # bob.rotate(angle = -ang, axis = vector(0,1,0), origin = vector(self.x, bob.pos.y, -self.y))
@@ -247,13 +280,23 @@ class Car:
             self.vehicle.pos.x = self.x - 28
             self.vehicle.pos.z = -self.y + 28
             
-            self.rel_ang = -(ang - self.abs_ang)
+            self.rel_ang = -(ang - self.abs_ang) #TODO: figure out why this requires a minus sign here
 
             self.vehicle.rotate(angle = self.rel_ang, axis = vector(0,1,0), origin = self.vehicle.pos)
 
-            self.abs_ang = ang
+            self.abs_ang = ang #TODO: probably because youre not storing -ang here? 
 
-            print(f'abs: {self.abs_ang} rel: {self.rel_ang}')
+            # print(f'abs: {self.abs_ang} rel: {self.rel_ang}')
+
+
+            if complete:
+                self.pending_right_turn = False
+                self.execute_event_now = False
+                
+                # TODO: switch the lane identifer
+                # TODO: switch the flags
+                print("leaving turn state")
+                self.nx_state = C_States.ACCEL
 
 
 
@@ -270,6 +313,9 @@ class Car:
             # temp_calc = self.vehicle.pos.x - center[0]
             # deg_to_rotate = (temp_calc) / sqrt(self.turn_radius**2 - (temp_calc**2))
             # self.vehicle.rotate(angle=deg_to_rotate/180*pi, axis =  vector(0,1,0), origin =  self.vehicle.pos)
+
+        elif self.pr_state == C_States.TURN_LEFT:
+            pass
 
             
 

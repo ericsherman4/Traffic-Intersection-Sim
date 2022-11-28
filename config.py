@@ -23,7 +23,7 @@ class g:
     time_green = 15
     print("TIME GREEN WAS CHANGED!!!!")
     time_yellow = 8
-    time_red_overlap = 7
+    time_red_overlap = 3
 
     # car
     car_width = 8
@@ -44,8 +44,8 @@ class g:
     car_vel_thres_yellow = 6
 
     # Car manager
-    max_cars = 6
-    max_cars_on_road = 5
+    max_cars = 2
+    max_cars_on_road = 1
     generate_cars_w_random = False
 
 class gtime:
