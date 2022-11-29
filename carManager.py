@@ -116,10 +116,11 @@ class CarManager:
         
         # If use_random is False, use manually generated events, otherwise, use random.
         if not use_random:
+            # THERE IS NO ERROR CHECKING. MUST ENSURE A CAR IS ONLY GIVEN ONE TURN COMMAND IN ITS LIFE
             Event(increment_prefix(10), EventType.C_EVENT, C_Event.ADD_CAR, lane = 0)
-            Event(time + 5, EventType.C_EVENT, C_Event.TURN_RIGHT, idx=0, lane = 0)
-            # Event(increment_prefix(15), EventType.C_EVENT, C_Event.ADD_CAR, lane = 0)
-            # Event(time + 5, EventType.C_EVENT, C_Event.TURN_RIGHT, idx=0, lane = 0)
+            Event(time + 1, EventType.C_EVENT, C_Event.TURN_RIGHT, idx=0, lane = 0)
+            Event(increment_prefix(15), EventType.C_EVENT, C_Event.ADD_CAR, lane = 0)
+            Event(time + 1, EventType.C_EVENT, C_Event.TURN_RIGHT, idx=1, lane = 0)
             # Event(increment_prefix(20), EventType.C_EVENT, C_Event.ADD_CAR, lane = 0)
             # Event(increment_prefix(10), EventType.C_EVENT, C_Event.ADD_CAR, lane = 0)
             # Event(increment_prefix(10), EventType.C_EVENT, C_Event.ADD_CAR, lane = 0)

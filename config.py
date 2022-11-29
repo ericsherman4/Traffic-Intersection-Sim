@@ -44,8 +44,8 @@ class g:
     car_vel_thres_yellow = 6
 
     # Car manager
-    max_cars = 2
-    max_cars_on_road = 1
+    max_cars = 3
+    max_cars_on_road = 2
     generate_cars_w_random = False
 
 class gtime:

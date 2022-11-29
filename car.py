@@ -179,6 +179,7 @@ class Car:
             print(f"ERROR DETECTED: NEAREST OBJ DISTANCE IS NEGATIVE")
             self.error_arrow.visible = True
         self.distance_to_nearest_obj = val
+
         
     # Run the car's state machine
     def run(self, curr_time):

@@ -87,6 +87,7 @@ class Lane:
             print(f"idx = {idx}")
             temp = self.cars[i % self.max_cars]
             self.cars[(i+1) % self.max_cars] = copy.deepcopy(temp)
+            self.cars[(i+1) % self.max_cars].vehicle = temp.vehicle.clone()
         print(f"pos of passed in car {car.vehicle.pos}")
         self.cars[idx] = copy.deepcopy(car) # this should run
         self.cars[idx].vehicle = car.vehicle.clone()
@@ -129,16 +130,32 @@ class Lane:
             return False
         
         # for the car thats being removed, reset it 
-        self.cars[idx].reset(self.lane_start)
         self.cars[idx].invisible()
+        self.cars[idx].reset(self.lane_start)
+        print("REMOVE LOOP")
+        print(f"idx before for loop value: {idx}")
+        print(f"self.end_ptr = {self.end_ptr} and the end idx = {abs(idx - self.end_ptr) -1}")
+        end = abs(idx - self.end_ptr)-1
+        for i in range(idx, end): # minus 1 because end_ptr points to empty loc
+            temp = self.cars[(i+1) % self.max_cars]
+            self.cars[i % self.max_cars] = copy.deepcopy(temp)
+            self.cars[i % self.max_cars].vehicle = temp.vehicle.clone()
+            print(f"CAR HAS BEEN COPIED: i = {i}")
+
+            print(f" pending right turn: {self.cars[i % self.max_cars].pending_right_turn}")
+
+        # -1 mod 8 = 7
+        print(f"the index its reseting: {(end) % self.max_cars}")
+        print(f"startptr: {self.start_ptr}")
+        self.cars[(end) % self.max_cars].invisible()
+        self.cars[(end) % self.max_cars].reset(self.lane_start) 
         
-        for i in range(idx, abs(idx - self.end_ptr)):
-            self.cars[i % self.max_cars] = copy.deepcopy(self.cars[(i+1) % self.max_cars])
-        
+        print(f" pending right turn: {self.cars[self.start_ptr].pending_right_turn}")
+
         self.end_ptr = (self.end_ptr - 1) % self.max_cars
-        if self.end_ptr < 0:
-            self.end_ptr = self.max_cars-1
         self.cars_on_road -=1
+
+        print(f"end of the remove function call {self.cars_on_road} and {self.end_ptr}")
 
         return True
 
@@ -233,9 +250,9 @@ class Lane:
             self.cars[idx].update_distances(min(dis_to_car, dis_to_light))
 
         # TEMP
-        if self.identifier == 0:
-            if self.cars[self.start_ptr].lane_pos >= self.stop_line_pos:
-                self.cars[self.start_ptr].pending_right_turn = True
+        # if self.identifier == 0:
+        #     if self.cars[self.start_ptr].lane_pos >= self.stop_line_pos:
+        #         self.cars[self.start_ptr].pending_right_turn = True
         
         # Debug 
         # self.debug()
@@ -244,20 +261,20 @@ class Lane:
         self.TL_state_prev = self.TL.get_state()
 
     def debug(self):
-        if self.identifier == 3:
-            if self.TL.get_state() != self.TL_state_prev:
-                thing = ""
-                if self.TL.get_state() == TL_Event.GREEN:
-                    thing = "green"
-                elif self.TL.get_state() == TL_Event.RED:
-                    thing = "red"
-                elif self.TL.get_state() == TL_Event.YELLOW:
-                    thing = "yellow"
-                print(f"state change detected, now its {thing}")
+        if self.identifier == 0:
+            # if self.TL.get_state() != self.TL_state_prev:
+            #     thing = ""
+            #     if self.TL.get_state() == TL_Event.GREEN:
+            #         thing = "green"
+            #     elif self.TL.get_state() == TL_Event.RED:
+            #         thing = "red"
+            #     elif self.TL.get_state() == TL_Event.YELLOW:
+            #         thing = "yellow"
+            #     print(f"state change detected, now its {thing}")
             print(f'lead cars dis: {self.cars[self.start_ptr].distance_to_nearest_obj} ptr = {self.start_ptr}' )
-            print(f'lead car {self.cars[self.start_ptr].distance_to_nearest_obj}, lead car pos {self.cars[self.start_ptr].lane_pos} ,following car {self.cars[self.start_ptr+1].distance_to_nearest_obj} and ptr {self.start_ptr} 2nd car pos {self.cars[self.start_ptr+1].lane_pos}')
-            print(f'4th car dis {self.cars[4].distance_to_nearest_obj}, lane pos {self.cars[4].lane_pos} vel {self.cars[4].vel}, stop line pos: {self.stop_line_pos} lead_veh_vel{self.cars[4].lead_veh_vel}')
-            print(f' 3rd car {self.cars[2].distance_to_nearest_obj}')  
+            # print(f'lead car {self.cars[self.start_ptr].distance_to_nearest_obj}, lead car pos {self.cars[self.start_ptr].lane_pos} ,following car {self.cars[self.start_ptr+1].distance_to_nearest_obj} and ptr {self.start_ptr} 2nd car pos {self.cars[self.start_ptr+1].lane_pos}')
+            # print(f'4th car dis {self.cars[4].distance_to_nearest_obj}, lane pos {self.cars[4].lane_pos} vel {self.cars[4].vel}, stop line pos: {self.stop_line_pos} lead_veh_vel{self.cars[4].lead_veh_vel}')
+            # print(f' 3rd car {self.cars[2].distance_to_nearest_obj}')  
 
     # Update the car with the car in front of it's velocity
     def update_lead_veh_vel(self):
@@ -301,8 +318,11 @@ class Lane:
                 return idx
             elif (not inverted) and self.cars[idx].lane_pos < self.stop_line_pos:
                 return idx
-        print("each end of func get_idx_to_insert")
-        return None
+
+        # if the first if and the for loop didnt catch it,
+        # then all the cars are in front of the stop line adn the place to insert
+        # is the last index.
+        return self.end_ptr
             
 
     # Store a reference to the traffic light so the Lane can view its state
