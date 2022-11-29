@@ -20,8 +20,7 @@ class g:
     show_tl_labels = False
 
     # traffic light timing (ms)
-    time_green = 15
-    print("TIME GREEN WAS CHANGED!!!!")
+    time_green = 25
     time_yellow = 8
     time_red_overlap = 3
 
@@ -36,7 +35,8 @@ class g:
 
     # car Personality
     car_max_speed = 8
-    car_min_speed = 4
+    car_min_speed = 6
+    print('changed car min speed')
     car_starting_vel_max = car_max_speed
     car_max_decel = 5
     car_max_accel = 5
@@ -44,8 +44,8 @@ class g:
     car_vel_thres_yellow = 6
 
     # Car manager
-    max_cars = 3
-    max_cars_on_road = 2
+    max_cars = 5
+    max_cars_on_road = 4
     generate_cars_w_random = False
 
 class gtime:

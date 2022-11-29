@@ -58,13 +58,13 @@ class CarManager:
                         print(f"current lane: {i}")
                         print(f" destination lane: {self.turn_right_map[i]}")
                         idx = self.lanes[self.turn_right_map[i]].get_idx_to_insert()
-                        print(f"insertation index is : {idx}")
+                        # print(f"insertation index is : {idx}")
                         car_idx_og_lane = self.lanes[i].turn_event_car_idx
-                        print(f"car_idx_og_lane is {car_idx_og_lane}")
+                        # print(f"car_idx_og_lane is {car_idx_og_lane}")
                         result = self.lanes[self.turn_right_map[i]].insert(idx, self.lanes[i].cars[car_idx_og_lane])
                         if result:
                             print("SUCCESSFULLY INSERTED")
-                            print(f"start_ptr {self.lanes[i].start_ptr} and end_ptr{self.lanes[i].end_ptr} and cars on road {self.lanes[i].cars_on_road}")
+                            # print(f"start_ptr {self.lanes[i].start_ptr} and end_ptr{self.lanes[i].end_ptr} and cars on road {self.lanes[i].cars_on_road}")
                             result = self.lanes[i].remove(car_idx_og_lane)
                             if result: 
                                 print("REMOVED SUCESSFULLY")
@@ -117,13 +117,17 @@ class CarManager:
         # If use_random is False, use manually generated events, otherwise, use random.
         if not use_random:
             # THERE IS NO ERROR CHECKING. MUST ENSURE A CAR IS ONLY GIVEN ONE TURN COMMAND IN ITS LIFE
+            Event(increment_prefix(0), EventType.C_EVENT, C_Event.ADD_CAR, lane = 0)
             Event(increment_prefix(10), EventType.C_EVENT, C_Event.ADD_CAR, lane = 0)
-            Event(time + 1, EventType.C_EVENT, C_Event.TURN_RIGHT, idx=0, lane = 0)
+            Event(increment_prefix(1), EventType.C_EVENT, C_Event.TURN_RIGHT, idx=1, lane = 0)
             Event(increment_prefix(15), EventType.C_EVENT, C_Event.ADD_CAR, lane = 0)
-            Event(time + 1, EventType.C_EVENT, C_Event.TURN_RIGHT, idx=1, lane = 0)
-            # Event(increment_prefix(20), EventType.C_EVENT, C_Event.ADD_CAR, lane = 0)
-            # Event(increment_prefix(10), EventType.C_EVENT, C_Event.ADD_CAR, lane = 0)
-            # Event(increment_prefix(10), EventType.C_EVENT, C_Event.ADD_CAR, lane = 0)
+            Event(increment_prefix(1), EventType.C_EVENT, C_Event.TURN_RIGHT, idx=2, lane = 0)
+            Event(increment_prefix(1), EventType.C_EVENT, C_Event.ADD_CAR, lane = 7)
+            Event(increment_prefix(20), EventType.C_EVENT, C_Event.ADD_CAR, lane = 0)
+            Event(increment_prefix(1), EventType.C_EVENT, C_Event.TURN_RIGHT, idx=3, lane = 0)
+            Event(increment_prefix(15), EventType.C_EVENT, C_Event.ADD_CAR, lane = 7)
+            # Event(increment_prefix(10), EventType.C_EVENT, C_Event.ADD_CAR, lane = 7)
+            # Event(increment_prefix(10), EventType.C_EVENT, C_Event.ADD_CAR, lane = 7)
             # Event(increment_prefix(20), EventType.C_EVENT, C_Event.ADD_CAR, lane = 0)
             # Event(increment_prefix(20), EventType.C_EVENT, C_Event.ADD_CAR, lane = 0)
             # Event(increment_prefix(15), EventType.C_EVENT, C_Event.ADD_CAR, lane = 0)
