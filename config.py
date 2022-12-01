@@ -8,9 +8,9 @@ class g:
     yellow_line_spacing_c2c = 2 #c2c = center to center
     white_line_width = 1.5
     dashed_line_length= 7
-    animate_loading = False
-    generate_lane_identifiers = True
-    generate_axes = True
+    animate_loading = True
+    generate_lane_identifiers = False
+    generate_axes = False
 
     #traffic light
     tl_height = 10
@@ -35,7 +35,7 @@ class g:
 
     # car Personality
     car_max_speed = 8
-    car_min_speed = 6
+    car_min_speed = 5
     print('changed car min speed')
     car_starting_vel_max = car_max_speed
     car_max_decel = 5
@@ -44,9 +44,9 @@ class g:
     car_vel_thres_yellow = 6
 
     # Car manager
-    max_cars = 5
-    max_cars_on_road = 4
-    generate_cars_w_random = False
+    max_cars = 7
+    max_cars_on_road = 5
+    generate_cars_w_random = True
 
 class gtime:
     delta_t = 0.1

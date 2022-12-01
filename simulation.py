@@ -15,10 +15,10 @@ class Simulation:
         # Canvas has a resizable option if wanted
         self.scene = canvas(height = 700, width = 1000)
         self.scene.background = vector(0.25,0.25,0.25)
-        self.scene.forward = vector(0.534283, -0.620986, -0.573514)
-        self.scene.camera.pos = vector(-43.8146, 41.232, 50.8608)
-        self.scene.center = vector(-0.62705, -8.96404, 4.50215)
-        self.scene.range = 46.668804816827986
+        self.scene.forward = vector(0.421305, -0.813416, -0.40107)
+        self.scene.camera.pos = vector(-203.921, 266.027, 194.373)
+        self.scene.center = vector(-35.2438, -59.6382, 33.7983)
+        self.scene.range = 231.15210346551677
 
         distant_light(direction=vector(0.4,1,0.7), color=color.gray(0.17))
         self.scene.ambient = color.gray(0.2)
@@ -28,7 +28,7 @@ class Simulation:
         if g.generate_axes:
             Axes()
 
-        self.sim_label = label(pos=vector(0,100,0), text="GENERATING CAR OBJECTS")
+        self.sim_label = label(pos=vector(0,100,0), text="GENERATING MAP AND CARS   ")
         self.performance_label = label(pos=vector(-100,2,100), text="WAITING FOR CLOCK")
 
         # Create car manager (car manager instantiates the environment)
@@ -92,11 +92,22 @@ class Simulation:
         self.t += gtime.delta_t
         self.cycles+=1
 
+        if self.cycles % 1000 == 0:
+            self.print_camera_info()
+
         # Capture end time and perform loop analysis
         self.loop_end_time = perf_counter()
         if self.cycles % 15 == 0:
             self.completion_time_ms = round((self.loop_end_time - self.loop_start_time)*1000,2)
             self.performance_label.text = str(f"Computation time: {self.completion_time_ms}ms")
+
+
+    def print_camera_info(self):
+        print(f"Camera pos: {self.scene.camera.pos}")
+        print(f"Camera range: {self.scene.range}")
+        print(f"Camera forward: {self.scene.forward}")
+        print(f"Camera center: {self.scene.center}")
+
 
         
 

@@ -67,6 +67,7 @@ class Lane:
     def deactivate(self):
         print("CAR DEACTIVATED")
         self.cars[self.start_ptr].invisible()
+        self.cars[self.start_ptr].reset(self.lane_start)
         self.cars_on_road -= 1
         self.start_ptr = (self.start_ptr + 1) % self.max_cars 
 
