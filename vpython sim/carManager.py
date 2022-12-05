@@ -51,23 +51,24 @@ class CarManager:
                 if self.lanes[i].turn_event_trigger:
                     self.lanes[i].turn_event_trigger = False
 
-                    print(f"TRIGGER BY LANE {i}")
+                    # print(f"TRIGGER BY LANE {i}")
 
                     # i need the car to move and position where to insert it? 
                     if self.lanes[i].turn_event_dir == C_Event.TURN_RIGHT:
-                        print(f"current lane: {i}")
-                        print(f" destination lane: {self.turn_right_map[i]}")
+                        # print(f"current lane: {i}")
+                        # print(f" destination lane: {self.turn_right_map[i]}")
                         idx = self.lanes[self.turn_right_map[i]].get_idx_to_insert()
                         # print(f"insertation index is : {idx}")
                         car_idx_og_lane = self.lanes[i].turn_event_car_idx
                         # print(f"car_idx_og_lane is {car_idx_og_lane}")
                         result = self.lanes[self.turn_right_map[i]].insert(idx, self.lanes[i].cars[car_idx_og_lane])
                         if result:
-                            print("SUCCESSFULLY INSERTED")
+                            # print("SUCCESSFULLY INSERTED")
                             # print(f"start_ptr {self.lanes[i].start_ptr} and end_ptr{self.lanes[i].end_ptr} and cars on road {self.lanes[i].cars_on_road}")
                             result = self.lanes[i].remove(car_idx_og_lane)
                             if result: 
-                                print("REMOVED SUCESSFULLY")
+                                pass
+                                # print("REMOVED SUCESSFULLY")
                             else: 
                                 print("FAILED TO REMOVE")
                         else:

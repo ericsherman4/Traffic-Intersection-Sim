@@ -20,23 +20,22 @@ class g:
     show_tl_labels = False
 
     # traffic light timing (ms)
-    time_green = 25
+    time_green = 32
     time_yellow = 8
-    time_red_overlap = 3
+    time_red_overlap = 5
 
     # car
     car_width = 8
     car_length = 18
     car_length_div2 = car_length/2
     car_height = 8
-    car_colors = [color.gray(0.2), color.gray(0.4), color.gray(0.6), color.blue, color.red, 
+    car_colors = [color.gray(0.4), color.blue, color.red, 
                   vector(101,67,33), color.green, color.orange, vector(207,185,151), vector(225,198,153), 
-                  color.purple, vector(255,215,0), color.yellow, color.cyan, color.magenta, vector(1,0.7,0.2)]
+                  color.purple, vector(255,215,0), color.yellow, color.cyan, color.magenta, vector(1,0.7,0.2), color.red]
 
     # car Personality
     car_max_speed = 8
     car_min_speed = 5
-    print('changed car min speed')
     car_starting_vel_max = car_max_speed
     car_max_decel = 5
     car_max_accel = 5

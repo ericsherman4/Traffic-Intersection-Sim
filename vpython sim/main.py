@@ -17,6 +17,6 @@ def sim_main():
 def print_notes():
     print("OPTIMIZE CAR MANAGER, SO MANY THINGS ARE USING THE SAME FOR LOOP BUT ITS ALL SEPARATE FUNCTIONS")
     print("ALSO OPTIMIZE BY JUST HAVING A BEHIND LIGHT FLAG, THAT WAY YOU DONT HAVE TO CHECK EVERYTIME")
+    print("replace things with numpy.take (has wrapping mode on array indices)")
     print("add dynamic v_set setting? ")
-    print("i wonder if setting distance to nearest car to be zero will always fix it?")
-    print("do the increment function you did in the traffic light manager. also why does it break if u increase time green?")
+    print("i wonder if setting distance to nearest car to be zero will always fix it? it will fix eventually but doesnt fix")

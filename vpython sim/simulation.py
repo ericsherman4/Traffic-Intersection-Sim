@@ -4,7 +4,7 @@ from carManager import CarManager
 from trafficlightManager import TrafficLightManager
 from event import Event, EventType
 from env import Axes
-from vpython import canvas, vector, distant_light, color, label
+from vpython import canvas, vector, distant_light, color, label, box
 
 
 class Simulation:
@@ -31,6 +31,9 @@ class Simulation:
         self.sim_label = label(pos=vector(0,100,0), text="GENERATING MAP AND CARS   ")
         self.performance_label = label(pos=vector(-100,2,100), text="WAITING FOR CLOCK")
 
+        # Create box to hide it during generation
+        boxy = box(pos=vector(0,0,0), length = g.roadwidth, width = g.roadwidth, height = g.roadwidth+40, color= color.black)
+
         # Create car manager (car manager instantiates the environment)
         self.cmgr = CarManager() 
 
@@ -39,6 +42,9 @@ class Simulation:
         # Create traffic light manager and generate events
         self.lmgr = TrafficLightManager()
         self.lmgr.generate_events(gtime.total_time)
+
+        # hide boxy
+        boxy.visible = False
 
         # Give car manager awareness of traffic light states
         self.cmgr.set_TL_references(self.lmgr.get_TL_references())

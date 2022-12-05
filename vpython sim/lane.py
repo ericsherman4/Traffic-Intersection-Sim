@@ -83,11 +83,11 @@ class Lane:
         if idx <0 or idx > (g.max_cars-1):
             print("INVALID INDEX")
             return False
-        print(f"idx before for loop value IN INSERT: {idx}")
-        print(f"self.end_ptr = {self.end_ptr} and abs and end val is {abs(idx - self.end_ptr)}")
+        # print(f"idx before for loop value IN INSERT: {idx}")
+        # print(f"self.end_ptr = {self.end_ptr} and abs and end val is {abs(idx - self.end_ptr)}")
         for i in range(idx, idx + abs(idx - self.end_ptr)):
             loop_index = idx + (idx + abs(idx - self.end_ptr)) - 1 - i
-            print(f"loop index is {loop_index}")
+            # print(f"loop index is {loop_index}")
             temp = self.cars[loop_index % self.max_cars]
             self.cars[(loop_index+1) % self.max_cars].invisible()
             self.cars[(loop_index+1) % self.max_cars].reset(self.lane_start)
@@ -144,9 +144,9 @@ class Lane:
         # for the car thats being removed, reset it 
         self.cars[idx].invisible()
         self.cars[idx].reset(self.lane_start)
-        print("REMOVE LOOP")
-        print(f"idx before for loop value: {idx}")
-        print(f"self.end_ptr = {self.end_ptr} and the end idx = {abs(idx - self.end_ptr) -1}")
+        # print("REMOVE LOOP")
+        # print(f"idx before for loop value: {idx}")
+        # print(f"self.end_ptr = {self.end_ptr} and the end idx = {abs(idx - self.end_ptr) -1}")
         end = abs(idx - self.end_ptr)-1
         for i in range(idx, idx+ end): # minus 1 because end_ptr points to empty loc
             temp = self.cars[(i+1) % self.max_cars]
@@ -156,13 +156,13 @@ class Lane:
             temp.reset(self.lane_start)
             # del temp
             
-            print(f"CAR HAS BEEN COPIED: i = {i}")
+            # print(f"CAR HAS BEEN COPIED: i = {i}")
 
             # print(f" pending right turn: {self.cars[i % self.max_cars].pending_right_turn}")
 
         # -1 mod 8 = 7
-        print(f"the index its reseting: {(idx+end) % self.max_cars}")
-        print(f"startptr: {self.start_ptr}")
+        # print(f"the index its reseting: {(idx+end) % self.max_cars}")
+        # print(f"startptr: {self.start_ptr}")
         self.cars[(idx+end) % self.max_cars].invisible()
         self.cars[(idx+end) % self.max_cars].reset(self.lane_start) 
         
@@ -310,24 +310,24 @@ class Lane:
                         self.turn_event_dir = C_Event.TURN_RIGHT
                         self.turn_event_car_idx = idx
                         self.cars[idx].execute_event_now = True
-                        print("code ran in check for turn events. setting trigger to true")
-                        print(id(self.cars[idx]))
+                        # print("code ran in check for turn events. setting trigger to true")
+                        # print(id(self.cars[idx]))
                     elif self.cars[idx].pending_left_turn:
                         self.turn_event_trigger = True
                         self.turn_event_dir = C_Event.TURN_LEFT
                         self.turn_event_car_idx = idx
                         self.cars[idx].execute_event_now = True
-                        print("code ran 2")
+                        # print("code ran 2")
 
     def get_idx_to_insert(self):
 
         if self.lane_empty():
             return self.start_ptr
 
-        print(f"num cars in lane {self.cars_on_road}")
+        # print(f"num cars in lane {self.cars_on_road}")
 
         inverted = self.identifier < 6 and self.identifier > 1
-        print(f' inverted: {inverted}')
+        # print(f' inverted: {inverted}')
         for i in range(0, self.cars_on_road):
             idx = (self.start_ptr + i) % self.max_cars
             if inverted and self.cars[idx].lane_pos > self.stop_line_pos:

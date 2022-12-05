@@ -1,4 +1,4 @@
-from vpython import vector,box, arrow, color, compound, rotate,sleep, local_light
+from vpython import vector,box, arrow, color, compound, rotate,sleep, local_light, extrusion, cylinder
 from config import g,gtime
 import random
 from math import pi,sqrt
@@ -14,9 +14,6 @@ class C_States:
 ###### Car Class
 ###################################
 
-# acceleration profile of a car
-# https://www.researchgate.net/figure/Acceleration-profile-of-a-car-according-to-ax_fig5_339600840
-
 # how to make car look nice
 # https://groups.google.com/g/vpython-users/c/T3SzNheUOAg
 
@@ -25,23 +22,48 @@ class Car:
     def __init__(self, pos :vector, rot_deg, lane, visible):
         random.seed()
         
-        # The y position passed in pos vector is ignored and instead offset is used  
-        self.offset = g.car_height >> 1
-
         # Create the car
         # the x z plane is actually the surface of the map, but treating it as x y since its more natural. so y position is being passed in to z parameter for vector
-        self.body = box(pos = vector(pos.x, self.offset, pos.z), width = g.car_width, height = g.car_height, length = g.car_length, 
-                           color= g.car_colors[random.randint(0,len(g.car_colors)-1)])#, emissive= True)
+        # self.body = box(pos = vector(pos.x, self.offset, pos.z), width = g.car_width, height = g.car_height, length = g.car_length, 
+        #                    color= g.car_colors[random.randint(0,len(g.car_colors)-1)])
         # self.lights = local_light(pos=vector(pos.x, self.offset, pos.z), color=color.gray(0.4))
-        self.dir = arrow(pos = vector(pos.x, self.offset,pos.z), axis = vector(-g.car_width-8,0,0), color = color.red)
-        self.center = arrow(pos = vector(pos.x, 0 , pos.z), axis = vector(0, 15, 0), color = color.white, emissive = True)
+
+        # Create the car
+        # Create linear paths for extrusion
+        # Losing the support for parameterized cars
+        linpath_body = [vector(0,0,4), vector(0,0,-4)]
+        linpath_window = [vector(0,0,4.1), vector(0,0,-4.1)]
+        linpath_wheelshadow = [vector(0,0,3.9), vector(0,0,-3.9)]
+        linpath_frontwindow = [vector(0,0,3.7), vector(0,0,-3.7)]
+
+        ex_top = extrusion(path=linpath_body, shape = [[-8,-1], [0,2], [12,0], [-8,-1]], color=g.car_colors[random.randint(0,len(g.car_colors)-1)])
+        ex_bot = extrusion(path=linpath_body, shape = [[-8, -1], [-7.6,-3], [-7,-3],[-6,-2],[-4.5,-2],[-3.5,-3],
+                                                       [5,-3],[6,-2],[7.5,-2],[8.5,-3],[10.7,-3],[12,0],[-8,-1]],
+                                                       color=color.gray(0.4))
+        ex_window = extrusion(path=linpath_window, shape=[[-6,-0.6],[0,1.5],[4,1],[4,0],[-6,-0.6]], color= color.gray(0.2))
+        ex_wheel_cover = extrusion(path=linpath_wheelshadow, shape = [[-7.9, -1], [-7.6,-2.9],[8.5,-2.9],[10.7,-2.9],
+                                                                     [11.9,0],[-7.9,-1]], color=color.gray(0.2))
+        ex_front_window = extrusion(path=linpath_frontwindow, shape = [[-6,-1.5], [-6,-0.2], [-1,1.7], [-6,-1.5]], 
+                                                                       color=color.gray(0.2))
+
+        w1 = cylinder(pos=vector(-7+1.75,-3.4,-4.1), axis=vector(0,0,1.1), radius=1.3, color=color.gray(0.05))
+        w2 = cylinder(pos=vector(-7+1.75,-3.4,4.1), axis=vector(0,0,-1.1), radius=1.3, color=color.gray(0.05))
+        w3 = cylinder(pos=vector(5+1.75,-3.4,-4.1), axis=vector(0,0,1.1), radius=1.3, color=color.gray(0.05))
+        w4 = cylinder(pos=vector(5+1.75,-3.4,4.1), axis=vector(0,0,-1.1), radius=1.3, color=color.gray(0.05))
+
+        # Create some other objects (mainly for debugging)
+        # self.center = arrow(pos = vector(pos.x, 0 , pos.z), axis = vector(0, 15, 0), color = color.white, emissive = True)
         self.error_arrow = arrow(pos = vector(pos.x, 40, pos.z), axis = vector(0,-20,0), color = color.black, shaft_width = 50, head_width = 65)
 
-        self.objects_to_update = [self.center, self.error_arrow]
+        # Store objects to update on the loops
+        # self.objects_to_update = [self.center,self.error_arrow]
+        self.objects_to_update = [self.error_arrow]
 
         # Create compound object and rotate it so its properly orientated in the lane
-        self.vehicle = compound([self.body, self.dir], origin = self.body.pos)
-        self.vehicle.rotate(angle= rot_deg/180*pi, axis=vector(0,1,0), origin=self.body.pos)
+        self.vehicle = compound([ex_top, ex_bot, ex_window, ex_wheel_cover, ex_front_window, w1, w2, w3, w4], origin = vector(0,0,0))
+        self.offset = self.vehicle.size.y/2 + 1.5
+        self.vehicle.pos = vector(pos.x,self.offset,pos.z)
+        self.vehicle.rotate(angle= rot_deg/180*pi, axis=vector(0,1,0), origin=self.vehicle.pos)
 
         # Define vehicle kinematics
         self.vel = random.uniform(0,g.car_starting_vel_max)
@@ -162,7 +184,7 @@ class Car:
     # set the car and other objects to be visible
     def visible(self):
         self.vehicle.visible = True
-        self.center.visible = True
+        # self.center.visible = True
         # error object should not be visible
         # for obj in self.objects_to_update:
         #     obj.visible = True
@@ -176,8 +198,10 @@ class Car:
     # update the cars distance to the nearest object (whether the traffic light or another car)
     def update_distances(self,val):
         if val != None and val < 0:
-            print(f"ERROR DETECTED: NEAREST OBJ DISTANCE IS NEGATIVE")
+            print(f"ERROR DETECTED: NEAREST OBJ DISTANCE IS NEGATIVE, RESETTING TO ZERO")
             self.error_arrow.visible = True
+            self.distance_to_nearest_obj = 0
+            return
         self.distance_to_nearest_obj = val
 
         
@@ -193,7 +217,7 @@ class Car:
 
             # Determine next state
             if self.vehicle.visible:
-                print("leaving waiting state going to accel")
+                # print("leaving waiting state going to accel")
                 self.nx_state = C_States.ACCEL
 
         elif self.pr_state == C_States.ACCEL:
@@ -207,7 +231,7 @@ class Car:
                 # self.execute_event_now = False # Lane needs to control this because car doesnt have access to the env variables it needs to be able to determine this otherwise
             elif self.pending_right_turn and self.execute_event_now:
                 self.nx_state = C_States.TURN_RIGHT
-                print("leaving accel state")
+                # print("leaving accel state")
                 # self.execute_event_now = False
 
 
@@ -296,7 +320,7 @@ class Car:
                 
                 # TODO: switch the lane identifer
                 # TODO: switch the flags
-                print("leaving turn state")
+                # print("leaving turn state")
                 self.nx_state = C_States.ACCEL
 
 
