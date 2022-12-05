@@ -73,8 +73,8 @@
 # Other Stuff
 
 ## Great YouTubers on the Subject
-- Coder Space, @CoderSpaceChannel (C++, DirectX, 3D Graphics, Game Design)
-- ChiliTomatoNoodle @ChiliTomatoNoodle (Python, 2D and 3D Grpahics, Game Design)
+- ChiliTomatoNoodle @ChiliTomatoNoodle (C++, DirectX, 3D Graphics, Game Design)
+- Coder Space, @CoderSpaceChannel (Python, 2D and 3D Graphics, Game Design)
 
 ## Random Super Cool Stuff
 - https://www.youtube.com/shorts/h5PuIm6fRr8
