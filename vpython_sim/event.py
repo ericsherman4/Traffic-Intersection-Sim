@@ -7,7 +7,7 @@ class EventType:
     TL_EVENT, C_EVENT = range(2)
 
 class C_Event:
-    pass
+    ADD_CAR, TURN_RIGHT, TURN_LEFT = range(3)
 
 class TL_Event:
     RED, GREEN, YELLOW, HALTED = range(4)
@@ -19,7 +19,7 @@ class Event:
     q = PriorityQueue() # sim event queue
     total_events = 0
 
-    def __init__(self, curr_time, event_type, action, idx, lane = -1):
+    def __init__(self, curr_time, event_type, action, idx = -1, lane = -1):
         # Event details
         self.time = curr_time #also priority, the lower the num, the higher the priority
         self.event_type = event_type
