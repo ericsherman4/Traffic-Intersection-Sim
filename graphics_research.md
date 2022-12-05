@@ -67,7 +67,17 @@
 - 3D Snake Game by Coder Space: https://www.youtube.com/watch?v=YZnOvc0qx_k
 - 3D Rubrics Cube by Coder Space: https://www.youtube.com/watch?v=OR2_zQN_Gbk
 
-## Honorable Mentions
+## VisPy
+- https://vispy.org/
+- 2D 3D graphics
+- Uses GPUs through OpenGL
+
+## Mayavi
+- https://docs.enthought.com/mayavi/mayavi/
+- 3D scientific data visualization and plotting
+- Not necessarily for your typical scenes
+
+## Other Libraries to Mention but That Don't Suit Immediate Needs
 - LOVR (https://lovr.org/), designed for VR and uses Lua for scripting (same as Teardown (the game))
 
 # Other Stuff
