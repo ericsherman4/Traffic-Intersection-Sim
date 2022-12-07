@@ -39,6 +39,7 @@ move_left = False
 # Calculate all of the line equations from the config
 line_eq = list()
 
+
 # list of lists where the sub list is [m,b]
 for i in range(0, len(g.wall_coords)):
     rise = g.wall_coords[(i+1) % len(g.wall_coords)][1] - g.wall_coords[i][1]
@@ -88,43 +89,71 @@ while True:
     screen.blit(bg,(0,0))
 
     # place walls
-    pygame.draw.lines(screen, 'Yellow', True, g.wall_coords, g.wall_thickness)
+    if g.display_wall: 
+        pygame.draw.lines(screen, 'Yellow', True, g.wall_coords, g.wall_thickness)
 
-    
-    
-    final_pos = pygame.Vector2(2000,0)
+    car_lines = list()
+    car_lines_pos = list()
+
+    # print("----------------")
+    angle = 360/g.num_lines
+    for i in range(0, g.num_lines):
+        new_ang = angle*i
+        final_pos = pygame.Vector2(g.length, 0)
+        final_pos = final_pos.rotate(-car.heading + new_ang) + car.pos   
+        # print(f"{new_ang}, {final_pos}, {-car.heading + new_ang}")
+        pygame.draw.line(screen, 'Black', car.pos, final_pos, width = 3)
+
+        # find the lines
+        denomin = (final_pos.x - car.pos.x)
+        if denomin == 0:
+            denomin = 0.0001
+        slope = (final_pos.y - car.pos.y) / denomin
+        b = -slope*car.pos.x + car.pos.y
+
+        car_lines.append([slope,b])
+        car_lines_pos.append(final_pos)
+
+
+        
+
+    # final_pos = pygame.Vector2(2000,0)
     #vectors rotate in the opposite direction of other rotate calls so invert heading
-    final_pos = final_pos.rotate(-car.heading) + car.pos
+    # final_pos = final_pos.rotate(-car.heading) + car.pos
 
     # print(f"{car.heading}, {car.pos}, {final_pos}")
-    pygame.draw.line(screen, 'White', car.pos, final_pos, width= 3)
+    # pygame.draw.line(screen, 'White', car.pos, final_pos, width= 3)
 
 
     # find line intersections
     # whats the equation of the line coming from the car? 
-    denomin = (final_pos.x - car.pos.x)
-    if denomin == 0:
-        denomin = 0.0001
-    slope = (final_pos.y - car.pos.y) / denomin
-    b = -slope*car.pos.x + car.pos.y
+    # denomin = (final_pos.x - car.pos.x)
+    # if denomin == 0:
+    #     denomin = 0.0001
+    # slope = (final_pos.y - car.pos.y) / denomin
+    # b = -slope*car.pos.x + car.pos.y
 
     # now look for any line intersections
     i=0
     for line in line_eq:
+        
         # line is [m,b], we'll see line is eq 2 and the car line is eq 1
-        denom = slope - line[0]
-        if denom == 0:
-            denom = 0.0001
-        int_x = (line[1] - b)/ denom
-        int_y = line[0]* int_x + line[1]
-        #check if the intersection is within the x range of the line
-        min_val = min(g.wall_coords[i][0],g.wall_coords[(i+1)%len(g.wall_coords)][0])
-        max_val = max(g.wall_coords[i][0],g.wall_coords[(i+1)%len(g.wall_coords)][0])
-        min_val_2 = min(car.pos.x, final_pos.x)
-        max_val_2 = max(car.pos.x, final_pos.x)
-        if int_x <= max_val and int_x >= min_val:
-            if int_x >= min_val_2 and int_x <= max_val_2:
-                pygame.draw.circle(screen, 'Red', (int_x,int_y), 10, 0)
+        j=0
+        for car_line in car_lines:
+            denom = car_line[0] - line[0]
+            if denom == 0:
+                denom = 0.0001
+            int_x = (line[1] - car_line[1])/ denom
+            int_y = line[0]* int_x + line[1]
+            #check if the intersection is within the x range of the line
+            min_val = min(g.wall_coords[i][0],g.wall_coords[(i+1)%len(g.wall_coords)][0])
+            max_val = max(g.wall_coords[i][0],g.wall_coords[(i+1)%len(g.wall_coords)][0])
+            min_val_2 = min(car.pos.x, car_lines_pos[j].x)
+            max_val_2 = max(car.pos.x, car_lines_pos[j].x)
+            if int_x <= max_val and int_x >= min_val:
+                if int_x >= min_val_2 and int_x <= max_val_2:
+                    pygame.draw.circle(screen, 'Red', (int_x,int_y), 10, 0)
+            j+=1
         i+=1
 
 
