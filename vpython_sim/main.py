@@ -7,7 +7,7 @@ def sim_main():
 
     sim = Simulation()
 
-    print_notes()
+    # print_notes()
 
     while sim.t < gtime.total_time:
         rate(gtime.sim_rate)

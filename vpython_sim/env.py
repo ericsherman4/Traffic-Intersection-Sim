@@ -1,6 +1,7 @@
 from vpython import box,vector,compound,color,arrow,sleep,label
 from config import g
 from math import pi
+from terminate import monitor_terminate
 
 class Env:
     def __init__(self):
@@ -37,6 +38,7 @@ class Env:
         pos_of_dashed_line = g.roadwidth/4
         while(count < white_lane_end):
             for i in range(0,4):
+                monitor_terminate()
                 line1 = box(pos=vector(count, 0, pos_of_dashed_line), height = 1.2, width = 1, length = g.dashed_line_length, color= color.white, emissive = True)
                 line2 = box(pos=vector(count, 0, -pos_of_dashed_line), height = 1.2, width = 1, length = g.dashed_line_length, color= color.white, emissive = True)
                 line1.rotate(angle=pi/2*i, axis = vector(0,1,0), origin=vector(0,0,0))

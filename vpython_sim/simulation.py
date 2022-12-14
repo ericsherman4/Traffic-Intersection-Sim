@@ -5,6 +5,7 @@ from trafficlightManager import TrafficLightManager
 from event import Event, EventType
 from env import Axes
 from vpython import canvas, vector, distant_light, color, label, box
+from terminate import monitor_terminate, monitor_pause
 
 
 class Simulation:
@@ -66,7 +67,10 @@ class Simulation:
     def run(self):
 
         # Get the start time of the function
-        self.loop_start_time = perf_counter()
+        self.loop_start_time = perf_counter_ns()
+
+        monitor_terminate()
+        monitor_pause()
 
         self.sim_label.text = str(round(self.t,2))
 
@@ -102,9 +106,9 @@ class Simulation:
             self.print_camera_info()
 
         # Capture end time and perform loop analysis
-        self.loop_end_time = perf_counter()
+        self.loop_end_time = perf_counter_ns()
         if self.cycles % 15 == 0:
-            self.completion_time_ms = round((self.loop_end_time - self.loop_start_time)*1000,2)
+            self.completion_time_ms = round((self.loop_end_time - self.loop_start_time)/1000000,2)
             self.performance_label.text = str(f"Computation time: {self.completion_time_ms}ms")
 
 
