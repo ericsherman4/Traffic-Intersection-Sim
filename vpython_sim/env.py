@@ -1,7 +1,7 @@
 from vpython import box,vector,compound,color,arrow,sleep,label
 from config import g
 from math import pi
-from terminate import monitor_terminate
+from gui_control import monitor_terminate
 
 class Env:
     def __init__(self):

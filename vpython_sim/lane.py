@@ -6,7 +6,7 @@ import copy
 from trafficlight import TrafficLight
 from config import g
 from vpython import vector
-from terminate import monitor_terminate
+from gui_control import monitor_terminate
 
 
 # The lane class uses a numpy array in order to store the car objects for each Lane. There is a bit of structure built around the array

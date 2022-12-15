@@ -10,7 +10,7 @@ class g:
     wall_coords = ((100,300), (400,100), (1600,500), (1400, 1000), (200,900))
     wall_thickness = 20
 
-    num_lines = 100
+    num_lines = 20
     length = 1000
 
     display_wall = True

@@ -3,7 +3,6 @@ import numpy as np
 from config import g
 from vpython import vector, label
 from event import Event, EventType, TL_Event
-from math import ceil
 
 class TrafficLightManager:
 

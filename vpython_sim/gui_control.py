@@ -21,3 +21,7 @@ def monitor_pause():
             if keyboard.is_pressed('r'):
                 print("Resuming")
                 return
+            if keyboard.is_pressed('q'):
+                print("Exit function triggered. Sending the kill signal.")
+                os.kill(os.getpid(), signal.SIGINT)
+                exit()

@@ -37,7 +37,7 @@ class g:
     car_max_speed = 8
     car_min_speed = 5
     car_starting_vel_max = car_max_speed
-    car_max_decel = 5
+    car_max_decel = 3
     car_max_accel = 5
     car_dis_thres_yellow = 20
     car_vel_thres_yellow = 6
@@ -45,7 +45,7 @@ class g:
     # Car manager
     max_cars = 7
     max_cars_on_road = 5
-    generate_cars_w_random = True
+    generate_cars_w_random = False
 
 class gtime:
     delta_t = 0.1

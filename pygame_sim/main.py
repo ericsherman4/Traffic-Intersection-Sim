@@ -12,6 +12,8 @@ pygame.display.set_caption('Echolocation')
 # Display 0 is my main monitor display
 screen = pygame.display.set_mode((g.display_x,g.display_y), 
                 pygame.SCALED, vsync = 1, display=g.display_id)
+width = screen.get_width()
+height = screen.get_height()
 
 # Time stuff
 clock = pygame.time.Clock()
@@ -39,7 +41,6 @@ move_left = False
 # Calculate all of the line equations from the config
 line_eq = list()
 
-
 # list of lists where the sub list is [m,b]
 for i in range(0, len(g.wall_coords)):
     rise = g.wall_coords[(i+1) % len(g.wall_coords)][1] - g.wall_coords[i][1]
@@ -48,14 +49,19 @@ for i in range(0, len(g.wall_coords)):
     b = -slope * g.wall_coords[i][0] + g.wall_coords[i][1]
     line_eq.append([slope, b])
 
-print(line_eq)
-print("verified the first and the last equation")
+# Button to hide border
+hide_btn_txt = clock_font.render('Hide', False, 'Yellow')
 
+# Button to incr line
+plus_btn = clock_font.render('+', False, 'Yellow')
+minus_btn = clock_font.render('-', False, 'Yellow')
 
-
+# cursor tracker
+mouse = (0,0)
 
 while True:
-    # check for player input
+
+    # check game events
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
@@ -74,6 +80,7 @@ while True:
                 move_left = True
             elif event.key == pygame.K_SPACE:
                 print("reset")
+                g.num_lines = 20
                 car.reset()
         elif event.type == pygame.KEYUP:
             if event.key == pygame.K_w:
@@ -84,19 +91,40 @@ while True:
                 move_right = False
             elif event.key == pygame.K_d:
                 move_left = False
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            if (width-100) <= mouse[0] <= (width-100+80) and 30 <= mouse[1] <= (30+40):
+                g.display_wall = not g.display_wall
+            elif (width-100) <= mouse[0] <= (width-100+30) and 80 <= mouse[1] <= (80+30):
+                g.num_lines += 5
+            elif (width-50) <= mouse[0] <= (width-50+30) and 80 <= mouse[1] <= (80+30):
+                g.num_lines -= 5
+            
 
     # place background
     screen.blit(bg,(0,0))
 
+    # draw buttons
+    pygame.draw.rect(screen,'black', [width-100, 30, 80, 40])
+    screen.blit(hide_btn_txt, (width-90, 40))
+    pygame.draw.rect(screen, 'black', [width-100, 80, 30, 30])
+    screen.blit(plus_btn, (width-93, 82))
+    pygame.draw.rect(screen, 'black', [width-50, 80, 30, 30])
+    screen.blit(minus_btn, (width-43, 87))
+
+    mouse = pygame.mouse.get_pos()
+
     # place walls
     if g.display_wall: 
         pygame.draw.lines(screen, 'Yellow', True, g.wall_coords, g.wall_thickness)
+    
 
     car_lines = list()
     car_lines_pos = list()
 
     # print("----------------")
-    angle = 360/g.num_lines
+    angle = 0
+    if g.num_lines != 0:
+        angle = 360/g.num_lines
     for i in range(0, g.num_lines):
         new_ang = angle*i
         final_pos = pygame.Vector2(g.length, 0)
@@ -113,25 +141,6 @@ while True:
 
         car_lines.append([slope,b])
         car_lines_pos.append(final_pos)
-
-
-        
-
-    # final_pos = pygame.Vector2(2000,0)
-    #vectors rotate in the opposite direction of other rotate calls so invert heading
-    # final_pos = final_pos.rotate(-car.heading) + car.pos
-
-    # print(f"{car.heading}, {car.pos}, {final_pos}")
-    # pygame.draw.line(screen, 'White', car.pos, final_pos, width= 3)
-
-
-    # find line intersections
-    # whats the equation of the line coming from the car? 
-    # denomin = (final_pos.x - car.pos.x)
-    # if denomin == 0:
-    #     denomin = 0.0001
-    # slope = (final_pos.y - car.pos.y) / denomin
-    # b = -slope*car.pos.x + car.pos.y
 
     # now look for any line intersections
     i=0
@@ -156,8 +165,6 @@ while True:
             j+=1
         i+=1
 
-
-
     # Update the time
     time = pygame.time.get_ticks()/1000
     clock_surface = clock_font.render(str(time), False, 'Yellow')
@@ -168,10 +175,6 @@ while True:
 
     # place car
     car.display(screen)
-
-
-    
-
 
     # update everything
     pygame.display.update()
