@@ -14,7 +14,7 @@ class Simulation:
         
         # Create the scene, setup the camera, and create lighting
         # Canvas has a resizable option if wanted
-        self.scene = canvas(height = 1050, width = 1900)
+        self.scene = canvas(height = 850, width = 1900)
         self.scene.background = vector(0.25,0.25,0.25)
         self.scene.forward = vector(0.421305, -0.813416, -0.40107)
         self.scene.camera.pos = vector(-203.921, 266.027, 194.373)

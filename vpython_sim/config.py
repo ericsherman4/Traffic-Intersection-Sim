@@ -45,7 +45,7 @@ class g:
     # Car manager
     max_cars = 7
     max_cars_on_road = 5
-    generate_cars_w_random = False
+    generate_cars_w_random = True
 
 class gtime:
     delta_t = 0.1
