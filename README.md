@@ -1,8 +1,10 @@
 # Traffic Intersection Simulation and LiDAR Demo
 
-Traffic Intersection Simulation built using python with VPython / GlowScript for graphics. LiDAR Demo is built using python and Pygame for graphics.
+Traffic Intersection Simulation built using python with VPython / GlowScript for graphics. LiDAR Demo is built using python and Pygame for graphics. An [anaconda distribution of python](https://www.anaconda.com/) and [conda environments](https://docs.conda.io/en/latest/) were used for this simulation.
 
 *This project was the final design project for ECE 1895 - Junior Design Fundamentals at the University of Pittsburgh. This README serves as the final report for this project.*
+
+## INSERT VIDEOS HERE, ADD NIGHT MODE VIDEO
 
 # Design Overview
 
@@ -28,7 +30,7 @@ Because this was a software project, different features of the simulation were a
 
 Throughout the design implementation, several issues arose such as the inability to delete graphics objects from memory. Most of these issues were discovered early on and these forced changes to the end architecture. These changes are highlighted below.
 
-# Design Implementation
+# Design Implementation & Testing
 
 First, I will begin by just laying it all on the table, and then breaking it down piece by piece. The code structure and files are as follows: 
 
@@ -56,8 +58,94 @@ First, I will begin by just laying it all on the table, and then breaking it dow
     - [learning.py](pygame_sim/learning.py)
     - [main.py](pygame_sim/main.py)
 
-All of the elements in the vpython simulation and where they fit in the hierarchy is highlighted in this diagram:
+All of the elements in the vpython simulation and where they fit in the hierarchy is highlighted in the following diagram. The diagram also contains a description of the class.
 
+*Click the image to open high-res version.*
 ![pic](/software_diagram.drawio%20(5).png)
 
+## Vpython Simulation Deep Dive
+
+### Jupyter Notebook 
+
+For most of the development for the Vpython simulation, Jupyter Notebook was used. Vpython has been implemented to work well in Jupyter Notebook and the framework provided makes it easy to rapidly run and test code verses running it outside of a notebook. However, there are some pit falls that I have noticed with this approach and that is inconsistencies with the simulation behavior, even with the exact same code being run. As an example, the rate() call (sets a limit on many times a loop can run per second) sometimes was properly triggering which results in the simulation completing within less than a second or other weird memory behavior due to having a kernel. This eventually led to moving away from using Jupyter Notebook. The Vpython library supports this and basically just creates a local web server to display the graphics. This resulted in significantly better results. 
+
+The Jupyter Notebook code to run the simulation looked like this:
+
+Cell 1
+```
+# NEED TO RUN THIS CELL BEFORE RUNNING CELL BELOW FOR THE FIRST TIME
+# ONLY NEED TO RUN THIS CELL ONCE (OR EVERYTIME KERNAL IS RESET)
+# https://ipython.org/ipython-doc/3/config/extensions/autoreload.html
+# https://stackoverflow.com/questions/54923554/jupyter-class-in-different-notebook
+%load_ext autoreload
+%autoreload 2
+```
+Cell 2
+```
+%reload_ext autoreload
+
+from main import *
+sim_main()
+```
+
+This code used some Jupyter Notebook directives to reload external libraries every time they were changed. Then it called the main simulation function.
+
+The new approach was to create a normal python file with the code that is in the cell 2 above. This file, jup_note_code.py, was then used to call the sim_main(). Obviously this approach lacks some nice control that Jupyter Notebook offered. Therefore, gui_control.py was created, which gives me the ability to pause and resume the simulation, and to quit the simulation (simply closing the tab or calling exit() doesn't work well because it doesn't close the web server and keeps the code hanging.)
+
+### High Level Code Description
+
+As seen from the diagram, the code is comprised of several nested objects. The intention was to give each level in the hierarchy different types of control. For example, we have the car class which should just be responsible for the looks of the vehicles and the vehicles kinematics. However, a higher level controller was needed to coordinate all of these vehicles. Here, the car manager was born for this purpose. However, as mentioned above, there's needs to be some way for cars to identify the lane that they are currently in. Hence, I created a lane class which has a finer grain of control over cars than the car manager. The lane class feeds each individual car in the simulation with information about other cars such as the distance to nearest obstacle, velocity of the car in front, etc. The car manager has higher level functionality and its main purpose is to control multiple instances of the lane class. It handles simulation events related to car objects and moving cars between lanes. 
+
+The same train of thought was applied for the traffic lights. Once the class for the traffic light was made, I need something to coordinate these traffic lights. The traffic light manager class was born to remedy this; it has the ability to generate events for a specific traffic light to change its color. The simulation class then pops these events off of the global queue when the simulation time is greater than the event time stamp. This global queue is also shared with the car manager which generates events related to car objects such as when to spawn in a car and when they should turn. 
+
+### Implementation Steps
+*Pulled from commit history; text is slightly modified.*
+
+1. Work on the map (ground, roads (no lane lines), and the traffic light).
+2. Infrastructure and class organization. Instead of writing all the code in Jupyter Notebook cells, did research how to implement code in files outside of the notebook, and then have this code loaded into Jupyter Notebook. This let me use Visual Studio Code to write code in which has provides much easier navigation through the code. 
+3. Finished traffic light and implemented a state machine based on timers internal to the class. 
+4. Added road lines.
+5. Work in progress on car manager class, lane class, and car class state machine. 
+6. Cars can now move on the road at constant velocity. 
+7. Changed simulation time variable from milliseconds to seconds and work in progress on the car state machine. 
+8. Implemented car deceleration approach when it detects other cars (untested). (More on this later.)
+9. Created event class and traffic light manager.
+10. Revamped traffic light class to be event driven. 
+11. Continued to work on car deceleration but barely works and is not robust enough. 
+12. Implemented adaptive cruise control algorithm (modified PID controller). Cars seem to respond to other cars and the traffic light.
+13. Fixed bug where cars would respond to the traffic light even though they passed it, cars respond better to yellow light (decide whether to stop or continue based on speed / distance), cars respond to other cars working in all lanes now.
+14.  Added car events to generate cars and played around with lighting and the environment.
+15.  Added random max acceleration, deceleration, start speed, and max speed. Tuned PID controller.
+16.  Major code clean up and bug fixes.
+17.  Clean up of traffic light manager.
+18.  Prototype of turning action done. 
+19.  Single case of turning from lane 0 works. 
+20.  Two turns from lane 0 works.
+21.  Lane 0 turning  with cars in both 0 and 7 working. 
+22.  Fixed camera view and bug fix with car reset() working.
+23.  Reorganized repo, tuning and clean up. 
+24.  Renamed folders and added research document on 3D libraries and game engines. 
+25.  Completed graphics research.
+26.  WIP on learning pygame.
+27.  1D LiDAR completed.
+28.  Parametrized LiDAR works (multiple lines).
+29.  Added pause, resume, and kill command for vpython simulation. Moving away from Jupyter Notebook. 
+30.  Removed ignored files from cache. 
+31.  Added in-game control for pygame simulation, some vpython simulation tuning. 
+
+
+### Car controller algrotihm
+
+###  challenges
+
+the grid and having some of the lanes be backwards
+vpyton memory management 
+
+## Pygame
+
+
+# referneces
+pid thing
+the paper
+pygame tutorial
 
