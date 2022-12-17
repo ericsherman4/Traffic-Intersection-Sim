@@ -1,4 +1,10 @@
 
+#############
+### There are some things that I missed in the in the comments of the video. 
+### THESE SHOULD BE NOTED IF THIS CODE IS USED ELSEWHERE.
+#############
+
+
 # more efficient, but less robust and modified to work for the application
 class PID_Modified: 
 
