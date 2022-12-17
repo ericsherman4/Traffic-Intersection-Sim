@@ -6,11 +6,14 @@ Traffic Intersection Simulation built using python with VPython / GlowScript for
 
 # Media
 
-https://user-images.githubusercontent.com/44278520/208232267-34581273-6818-4207-bc30-29ffbf5210c5.mp4
+https://user-images.githubusercontent.com/44278520/208232279-d45448bc-907d-4ff8-a76e-ac2ee92d97c2.mp4
 
 https://user-images.githubusercontent.com/44278520/208232277-ecfde421-8503-4e25-be8a-bb9ea3b73858.mp4
 
-https://user-images.githubusercontent.com/44278520/208232279-d45448bc-907d-4ff8-a76e-ac2ee92d97c2.mp4
+https://user-images.githubusercontent.com/44278520/208232267-34581273-6818-4207-bc30-29ffbf5210c5.mp4
+
+
+[![Daytime Normal](/report/thumbnail.png)](https://youtu.be/JE7hE6CrDgI "Daytime Normal")
 
 # Design Overview
 
