@@ -14,7 +14,7 @@ https://user-images.githubusercontent.com/44278520/208233723-55870388-28c5-4a53-
 
 ### Vypthon Simulation
 
-The video below shows the simulation showcases the cars ability to turn. In the beginning, there is an animation implemented for when the environment is being generated. Then, you might see black arrows flickering. These arrows are actualy the cars being generated (all the car objects are pregenerated for the simulation). After generating all the vehciles, the simulation begins. More on this simulation below.
+The video below shows the simulation showcases the cars ability to turn. In the beginning, there is an animation implemented for when the environment is being generated. Then, you might see black arrows flickering. These arrows are actually the cars being generated (all the car objects are pre-generated for the simulation). After generating all the vehicles, the simulation begins. More on this simulation below.
 
 https://user-images.githubusercontent.com/44278520/208232279-d45448bc-907d-4ff8-a76e-ac2ee92d97c2.mp4
 
@@ -176,6 +176,14 @@ To try out one of them, pygame, I decided to implement the software LiDAR approa
 A majority of the time was spent learning how to use the library. I mainly used the documentation on the pygame website and this tutorial [The Ultimate Introduction to Pygame](https://www.youtube.com/watch?v=AY9MnQ4x3zk&t=8611s). The implementation of the LiDAR demo was pretty straight forward. There was a car class that handled the cars kinematics, control, and display ion the game. The car is controlled using the W,A,S,D keys. The car would placed in the center of a screen. A list of 2D points would be passed into the simulation and a function would draw lines (walls) between all points, creating a closed polygon. A for loop generates x number of lines that shoot out from the car in all directions. These act as the 'lasers'. Another for loop finds all of the line intersections between the car lines and the walls in the environment. After a bunch of bounds checking (because the lines are actually line segments), a red dot is displayed if it satisfies the bound checks. The last thing I worked on was hiding in-game controls such as hiding the walls and changing the number of lines that shot out from the car. This approach is what I would have liked to use it for the vpython simulation but eventually omitted it because of the computational load. 
 
 # Summary, Conclusions, and Future Work
+
+The goal of this project was to explore creating a simulation of a traffic intersection. The objective was to have multiple cars on a multi-lane road that would respond to other cars around them, react to the traffic light, be able to yield while turning left, and also be able to turn right. All of these objectives came into fruition besides yield on left turn which was omitted due to issues implementing turning in general. The problem arises from deep copying the car object. This is a recursive copy due to several Vpython objects and the PID class being part of the car class. If this was C++, my solution would be to have the ring buffers store pointers to car objects, and then when a car needed to move between lanes, all that would be needed is to swap pointers. In python, this would be equivalent to passing around objects by reference, which should be possible (potentially with another data structure). This would eliminate the simulation freezing whenever the cars turn.
+
+During my research of other 3D graphics libraries, I came across many promising candidates that I would like to try to use in future simulations. I also stumbled upon some great resources for learning them, including a YouTuber with a channel focused on teaching C++ through the lens of creating 3D graphics applications using DirectX and video game development. As I am in great need of a C++ refresher, I will definitely be looking into these tutorials and potentially rewriting the simulation in C++.  
+
+Thanks for reading!
+
+
 
 
 
