@@ -4,7 +4,13 @@ Traffic Intersection Simulation built using python with VPython / GlowScript for
 
 *This project was the final design project for ECE 1895 - Junior Design Fundamentals at the University of Pittsburgh. This README serves as the final report for this project.*
 
-## INSERT VIDEOS HERE, ADD NIGHT MODE VIDEO
+# Media
+
+https://user-images.githubusercontent.com/44278520/208232267-34581273-6818-4207-bc30-29ffbf5210c5.mp4
+
+https://user-images.githubusercontent.com/44278520/208232277-ecfde421-8503-4e25-be8a-bb9ea3b73858.mp4
+
+https://user-images.githubusercontent.com/44278520/208232279-d45448bc-907d-4ff8-a76e-ac2ee92d97c2.mp4
 
 # Design Overview
 
