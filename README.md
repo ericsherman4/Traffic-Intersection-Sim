@@ -6,14 +6,30 @@ Traffic Intersection Simulation built using python with VPython / GlowScript for
 
 # Media
 
+### Pygame Simulation
+
+Here a vehicle is shooting out lines or "lasers". The lasers detect the presence of the yellow walls. The number of lasers and the visibility of the wall can be changed. More on this simulation below.
+
+https://user-images.githubusercontent.com/44278520/208233723-55870388-28c5-4a53-b80f-bd75d47103af.mp4
+
+### Vypthon Simulation
+
+The video below shows the simulation showcases the cars ability to turn. In the beginning, there is an animation implemented for when the environment is being generated. Then, you might see black arrows flickering. These arrows are actualy the cars being generated (all the car objects are pregenerated for the simulation). After generating all the vehciles, the simulation begins. More on this simulation below.
+
 https://user-images.githubusercontent.com/44278520/208232279-d45448bc-907d-4ff8-a76e-ac2ee92d97c2.mp4
+
+The following video shows the simulation above but using nighttime mode. 
 
 https://user-images.githubusercontent.com/44278520/208232277-ecfde421-8503-4e25-be8a-bb9ea3b73858.mp4
 
+Next, we have the simulation of the vehicles turning right again, this time in night mode.
+
 https://user-images.githubusercontent.com/44278520/208232267-34581273-6818-4207-bc30-29ffbf5210c5.mp4
 
+This last video is hosted on youtube due to its size. This simulation just has the cars driving straight, no turning. Compared to the night mode, this simulation has the max cars per lane size increased.
 
 [![Daytime Normal](/report/thumbnail.png)](https://youtu.be/JE7hE6CrDgI "Daytime Normal")
+
 
 # Design Overview
 
