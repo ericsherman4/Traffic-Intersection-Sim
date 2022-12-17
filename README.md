@@ -1,3 +1,5 @@
+*^^Table of Contents is available when clicking the 3 bars in the top left corner!*
+
 # Traffic Intersection Simulation and LiDAR Demo
 
 Traffic Intersection Simulation built using python with VPython / GlowScript for graphics. LiDAR Demo is built using python and Pygame for graphics. An [anaconda distribution of python](https://www.anaconda.com/) and [conda environments](https://docs.conda.io/en/latest/) were used for this simulation.
